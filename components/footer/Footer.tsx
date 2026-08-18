@@ -116,19 +116,11 @@ export function Footer() {
       <div className="border-t hairline">
         <div className="mx-auto max-w-[1600px] px-6 md:px-10 py-8 flex flex-col md:flex-row items-center justify-between text-[11px] uppercase tracking-widest text-stone-500 gap-4">
           <span>© {new Date().getFullYear()} {settings.siteName}. All rights reserved.</span>
-          <div className="flex gap-6">
-            <Link href="/privacy" className="hover:text-[var(--foreground)] transition-colors">
-              Privacy
-            </Link>
-            <Link href="/terms" className="hover:text-[var(--foreground)] transition-colors">
-              Terms
-            </Link>
-            <SocialLinks
-              socials={business.socials}
-              className="flex items-center gap-4 normal-case tracking-normal"
-              iconClassName="w-4 h-4"
-            />
-          </div>
+          <SocialLinks
+            socials={business.socials}
+            className="flex items-center gap-5 normal-case tracking-normal"
+            iconClassName="size-5"
+          />
         </div>
       </div>
     </footer>
