@@ -15,11 +15,19 @@ const DEFAULT_SITE_HOST =
 
 /**
  * Extract the incoming host from request headers (Server Components only).
+ *
+ * x-preview-site-host (set by middleware.ts from ?__site=/the preview
+ * cookie) wins over everything — it's how the dashboard's editor iframe
+ * previews a specific site on the shared Vercel deployment. Checked before
+ * x-forwarded-host on purpose: Vercel's edge resets x-forwarded-host to the
+ * real request host after middleware runs, so it can never carry the
+ * override there — only a non-reserved custom header can.
  */
 export async function getSiteHost(): Promise<string> {
   try {
     const headersList = await headers();
     const hostHeader =
+      headersList.get("x-preview-site-host") ||
       headersList.get("x-forwarded-host") ||
       headersList.get("host") ||
       DEFAULT_SITE_HOST;
