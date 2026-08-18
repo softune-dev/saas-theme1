@@ -17,7 +17,7 @@ export default async function AboutPage() {
     <AboutPageClient
       siteName={config.site.name}
       theme={config.site.theme ?? {}}
-      business={config.site.business ?? {}}
+      about={config.site.about ?? {}}
     />
   );
 }

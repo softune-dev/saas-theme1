@@ -8,7 +8,7 @@ import { Footer } from "@/components/footer/Footer";
 import type { PublicSiteConfig } from "@/lib/theme-types";
 
 type Theme = NonNullable<PublicSiteConfig["site"]["theme"]>;
-type Business = NonNullable<PublicSiteConfig["site"]["business"]>;
+type About = NonNullable<PublicSiteConfig["site"]["about"]>;
 
 // Reuses the merchant's own Why Choose Us content (Site Editor → Why Choose
 // Us section) rather than inventing separate "About page" copy — it's
@@ -19,15 +19,19 @@ const PILLAR_ICONS = [Award, Heart, ShieldCheck];
 export function AboutPageClient({
   siteName,
   theme,
-  business,
+  about,
 }: {
   siteName: string;
   theme: Theme;
-  business: Business;
+  about: About;
 }) {
-  const heroImage = theme.heroImagesSquare?.[0] as string | undefined;
+  // Dedicated About Us content (Site Settings → About Us) — deliberately
+  // NOT the homepage hero images or the short business.description; this
+  // page has its own image and longer-form story paragraphs.
+  const aboutImage = about.image || "";
+  const heading = about.heading || siteName;
+  const paragraphs = about.paragraphs ?? [];
   const tagline = (theme.tagline as string | undefined) || "";
-  const story = business.description || "";
 
   const pillars = [
     { title: theme.why1Title as string, body: theme.why1 as string },
@@ -69,9 +73,9 @@ export function AboutPageClient({
           transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
           className="relative aspect-[3/4] md:aspect-[4/5] bg-stone-200 overflow-hidden"
         >
-          {heroImage ? (
+          {aboutImage ? (
             <Image
-              src={heroImage}
+              src={aboutImage}
               alt={siteName}
               fill
               sizes="(max-width: 768px) 100vw, 50vw"
@@ -92,13 +96,13 @@ export function AboutPageClient({
             style={{ fontFamily: "var(--font-display)" }}
             className="font-display text-3xl md:text-4xl leading-[1.1] text-[var(--foreground)]"
           >
-            {siteName}
+            {heading}
           </h2>
-          {story ? (
-            <p className="text-sm md:text-base text-stone-500 leading-relaxed">
-              {story}
+          {paragraphs.map((p, i) => (
+            <p key={i} className="text-sm md:text-base text-stone-500 leading-relaxed">
+              {p}
             </p>
-          ) : null}
+          ))}
         </motion.div>
       </section>
 

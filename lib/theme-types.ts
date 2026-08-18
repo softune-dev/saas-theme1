@@ -226,6 +226,13 @@ export type PublicSiteConfig = {
     template_key: string;
     framework: string;
     theme?: Record<string, any>;
+    /** Dedicated About Us content — separate from theme.tagline and
+     * business.description, with its own image (not the homepage hero). */
+    about?: {
+      heading?: string;
+      image?: string;
+      paragraphs?: string[];
+    };
     business?: {
       name?: string;
       type?: string;
