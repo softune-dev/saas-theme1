@@ -3,10 +3,13 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useTheme } from "@/lib/theme-context";
+import { useBusiness } from "@/lib/business-context";
 import { SiteLogo } from "@/components/brand/SiteLogo";
+import { SocialLinks } from "@/components/social-links/SocialLinks";
 
 export function Footer() {
   const { settings } = useTheme();
+  const business = useBusiness();
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
 
@@ -120,7 +123,11 @@ export function Footer() {
             <Link href="/terms" className="hover:text-[var(--foreground)] transition-colors">
               Terms
             </Link>
-            <span>Nationwide delivery.</span>
+            <SocialLinks
+              socials={business.socials}
+              className="flex items-center gap-4 normal-case tracking-normal"
+              iconClassName="w-4 h-4"
+            />
           </div>
         </div>
       </div>

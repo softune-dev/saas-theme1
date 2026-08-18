@@ -29,6 +29,7 @@ import { Suspense } from "react";
 import Script from "next/script";
 import "./globals.css";
 import { ThemeProvider } from "@/lib/theme-context";
+import { BusinessProvider } from "@/lib/business-context";
 import { CartProvider } from "@/components/cart/CartContext";
 import { ToastProvider } from "@/components/ui/Toast";
 import { Header } from "@/components/header/Header";
@@ -396,13 +397,15 @@ export default async function RootLayout({
           <PreviewRouteBeacon />
         </Suspense>
         <ThemeProvider initialSettings={theme}>
-          <ToastProvider>
-            <CartProvider>
-              <Header categories={categories} />
-              <main className="flex-1">{children}</main>
-              <CartDrawer />
-            </CartProvider>
-          </ToastProvider>
+          <BusinessProvider business={config.site.business ?? {}}>
+            <ToastProvider>
+              <CartProvider>
+                <Header categories={categories} />
+                <main className="flex-1">{children}</main>
+                <CartDrawer />
+              </CartProvider>
+            </ToastProvider>
+          </BusinessProvider>
         </ThemeProvider>
       </body>
     </html>
