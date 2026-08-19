@@ -229,7 +229,7 @@ export function ProductDetailClient({
           {product.colors && product.colors.length > 0 ? (
             <div>
               <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.18em] font-medium text-stone-700">
-                <span>Color</span>
+                <span>{product.colorLabel || "Color"}</span>
                 {selectedColor ? (
                   <span className="text-stone-400">{selectedColor}</span>
                 ) : null}
@@ -253,11 +253,13 @@ export function ProductDetailClient({
             </div>
           ) : null}
 
-          {/* Size Selector */}
+          {/* Size Selector — label is the merchant's own saved variant
+           * type name (e.g. "Size"), not a hardcoded heading; the old
+           * "Standard fit" subtitle was invented copy with nothing behind
+           * it, so it's gone rather than kept as a fake reassurance. */}
           <div>
-            <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.18em] font-medium text-stone-700">
-              <span>Size</span>
-              <span className="text-stone-400">Standard fit</span>
+            <div className="flex items-center text-[11px] uppercase tracking-[0.18em] font-medium text-stone-700">
+              <span>{product.sizeLabel || "Size"}</span>
             </div>
             <div className="mt-3 grid grid-cols-5 gap-2">
               {availableSizes.map((s) => (

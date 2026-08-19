@@ -98,10 +98,12 @@ function adaptProduct(p: PublicProduct): Product {
   const sizeVariant = variants?.find((v) => v.type.trim().toLowerCase() === "size");
   const colorVariant = variants?.find((v) => v.type.trim().toLowerCase() === "color");
   const sizes = sizeVariant?.values.map((v) => v.value) ?? [];
+  const sizeLabel = sizeVariant?.type;
   const colors = colorVariant?.values.map((v) => ({
     name: v.value,
     hex: colorNameToHex(v.value),
   }));
+  const colorLabel = colorVariant?.type;
   const discountPercent =
     p.compareAtPrice && p.compareAtPrice > p.price
       ? Math.round((1 - p.price / p.compareAtPrice) * 100)
@@ -137,7 +139,9 @@ function adaptProduct(p: PublicProduct): Product {
     freeDelivery: p.freeDelivery,
     deliveryCharges: p.deliveryCharges ?? [],
     sizes,
+    sizeLabel,
     colors,
+    colorLabel,
   };
 }
 

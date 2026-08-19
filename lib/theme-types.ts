@@ -171,7 +171,13 @@ export type Product = {
     dimensions?: string;
   };
   sizes?: string[];
+  /** The merchant's own label for this variant type (e.g. "Size", "Fit",
+   * "Length") — variant.type is free text, not a fixed "Size"/"Color"
+   * pair, so the storefront must show what was actually saved rather than
+   * a hardcoded "Size" heading. */
+  sizeLabel?: string;
   colors?: { name: string; hex: string }[];
+  colorLabel?: string;
   /** True = no delivery charge for this product, ever. False + empty
    * deliveryCharges = the merchant hasn't set delivery pricing yet — treat
    * as "unknown", not as free. */

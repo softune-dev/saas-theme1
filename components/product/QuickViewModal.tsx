@@ -157,7 +157,7 @@ export function QuickViewModal({
             {product.colors && product.colors.length > 0 && (
               <div className="mb-4">
                 <label className="block text-xs font-semibold text-[var(--theme-ink)] uppercase tracking-wider mb-2">
-                  Color: <span className="font-normal text-stone-600">{selectedColor || product.colors[0].name}</span>
+                  {product.colorLabel || "Color"}: <span className="font-normal text-stone-600">{selectedColor || product.colors[0].name}</span>
                 </label>
                 <div className="flex gap-2">
                   {product.colors.map((c) => (
@@ -185,7 +185,7 @@ export function QuickViewModal({
             {product.sizes && product.sizes.length > 0 && (
               <div className="mb-5">
                 <label className="block text-xs font-semibold text-[var(--theme-ink)] uppercase tracking-wider mb-2">
-                  Select Size:
+                  Select {product.sizeLabel || "Size"}:
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {product.sizes.map((s) => (
