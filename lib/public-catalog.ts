@@ -14,6 +14,7 @@
  * change at all.
  */
 import { Product, ProductCategory } from "./theme-types";
+import { colorNameToHex } from "./color-names";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ||
@@ -83,15 +84,24 @@ function stripHtml(html: string, maxLength = 160): string {
   return text.length > maxLength ? `${text.slice(0, maxLength - 1)}…` : text;
 }
 
-/** First variant type's values become `sizes` — the closest existing field
- * to "the attribute a shopper picks before adding to bag." Real variant
- * shape is { variants: [{ type, values: [{ value, priceDeltaCents? }] }] },
- * see app/products.py's validate_variants. */
+/** Variant types are matched BY NAME ("Size" / "Color"), not by array
+ * position — a product with only a Color variant (no Size) used to get its
+ * color values mislabeled as sizes because this blindly took variants[0].
+ * Real variant shape is { variants: [{ type, values: [{ value,
+ * priceDeltaCents? }] }] }, see app/products.py's validate_variants. Color
+ * hex values are never stored anywhere — colorNameToHex derives a swatch
+ * client-side from the merchant-typed name only. */
 function adaptProduct(p: PublicProduct): Product {
   const variants = p.attributes?.variants as
     | { type: string; values: { value: string }[] }[]
     | undefined;
-  const sizes = variants?.[0]?.values.map((v) => v.value) ?? [];
+  const sizeVariant = variants?.find((v) => v.type.trim().toLowerCase() === "size");
+  const colorVariant = variants?.find((v) => v.type.trim().toLowerCase() === "color");
+  const sizes = sizeVariant?.values.map((v) => v.value) ?? [];
+  const colors = colorVariant?.values.map((v) => ({
+    name: v.value,
+    hex: colorNameToHex(v.value),
+  }));
   const discountPercent =
     p.compareAtPrice && p.compareAtPrice > p.price
       ? Math.round((1 - p.price / p.compareAtPrice) * 100)
@@ -127,6 +137,7 @@ function adaptProduct(p: PublicProduct): Product {
     freeDelivery: p.freeDelivery,
     deliveryCharges: p.deliveryCharges ?? [],
     sizes,
+    colors,
   };
 }
 

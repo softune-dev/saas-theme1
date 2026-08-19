@@ -49,10 +49,13 @@ export function ProductDetailClient({
   const [selectedSize, setSelectedSize] = useState<string>(
     product.sizes?.[0] || "M"
   );
+  const [selectedColor, setSelectedColor] = useState<string | undefined>(
+    product.colors?.[0]?.name
+  );
   const [quantity, setQuantity] = useState<number>(1);
 
   const handleBuyNow = () => {
-    addItem(product, quantity, selectedSize);
+    addItem(product, quantity, selectedSize, selectedColor);
     closeDrawer();
     router.push("/checkout");
   };
@@ -60,7 +63,8 @@ export function ProductDetailClient({
   const handleWhatsAppBuy = () => {
     const phoneNumber = "8801700000000"; // Default phone number
     const url = typeof window !== "undefined" ? window.location.href : "";
-    const message = `Hello, I'd like to order: *${product.name}*\nSize: ${selectedSize}\nQuantity: ${quantity}\nLink: ${url}`;
+    const colorLine = selectedColor ? `\nColor: ${selectedColor}` : "";
+    const message = `Hello, I'd like to order: *${product.name}*\nSize: ${selectedSize}${colorLine}\nQuantity: ${quantity}\nLink: ${url}`;
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, "_blank");
   };
@@ -71,7 +75,7 @@ export function ProductDetailClient({
   const related = relatedProducts.filter((p) => p.id !== product.id).slice(0, 3);
 
   const handleAddToCart = () => {
-    addItem(product, quantity, selectedSize);
+    addItem(product, quantity, selectedSize, selectedColor);
     openDrawer();
   };
 
@@ -217,6 +221,36 @@ export function ProductDetailClient({
             <p className="max-w-md text-sm leading-relaxed text-stone-600">
               {product.tagline}
             </p>
+          ) : null}
+
+          {/* Color Selector — real swatch circles, not text pills. Hex is
+           * derived client-side from the merchant-typed color name
+           * (lib/color-names.ts); nothing stored on the backend changes. */}
+          {product.colors && product.colors.length > 0 ? (
+            <div>
+              <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.18em] font-medium text-stone-700">
+                <span>Color</span>
+                {selectedColor ? (
+                  <span className="text-stone-400">{selectedColor}</span>
+                ) : null}
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2.5">
+                {product.colors.map((c) => (
+                  <button
+                    key={c.name}
+                    type="button"
+                    onClick={() => setSelectedColor(c.name)}
+                    aria-label={c.name}
+                    title={c.name}
+                    className={`size-9 shrink-0 cursor-pointer rounded-full border transition-all ${selectedColor === c.name
+                        ? "ring-2 ring-[var(--brand)] ring-offset-2"
+                        : "border-stone-300 hover:ring-2 hover:ring-stone-300 hover:ring-offset-2"
+                      }`}
+                    style={{ backgroundColor: c.hex }}
+                  />
+                ))}
+              </div>
+            </div>
           ) : null}
 
           {/* Size Selector */}
