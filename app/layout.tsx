@@ -35,7 +35,7 @@ import { ToastProvider } from "@/components/ui/Toast";
 import { Header } from "@/components/header/Header";
 import { CartDrawer } from "@/components/cart/CartDrawer";
 import { PreviewRouteBeacon } from "@/components/dev/PreviewRouteBeacon";
-import { getSiteHost, fetchSiteConfig } from "@/lib/get-site";
+import { getSiteHost, fetchSiteConfig, getPageSeo } from "@/lib/get-site";
 import { getSiteCategories } from "@/lib/public-catalog";
 import { SiteUnavailable } from "@/components/ui/SiteUnavailable";
 import type { SiteEditorSettings } from "@/lib/theme-types";
@@ -285,38 +285,46 @@ export async function generateMetadata(): Promise<Metadata> {
 
   const baseUrl = `https://${host}`;
   const siteName = config.site.name;
-  // Real seeded data, not invented marketing copy — falls back to the site's
-  // own tagline (from theme) only if a business description hasn't been set.
-  const tagline = (config.site.theme?.tagline as string | undefined) ?? "";
-  const description = config.site.business?.description || tagline;
+
+  // Root layout metadata is the site-wide default every page inherits
+  // (favicon, OG image, indexing) unless a specific page overrides it — so
+  // this must read the merchant's real SEO settings, not invent a generic
+  // title/description from scratch. getPageSeo("") already merges page SEO
+  // over site SEO over business description (see _resolve_seo on the
+  // backend) — previously none of og_title/og_description/og_image/favicon/
+  // noindex ever reached here, so Settings → SEO silently did nothing.
+  const seo = await getPageSeo("", host);
 
   return {
     metadataBase: new URL(baseUrl),
     title: {
-      default: `${siteName} — ${tagline}`,
+      default: seo.title,
       template: `%s | ${siteName}`,
     },
-    description,
+    description: seo.description,
+    keywords: seo.keywords || undefined,
     alternates: {
-      canonical: baseUrl,
+      canonical: seo.canonical,
     },
+    icons: seo.favicon ? { icon: seo.favicon } : undefined,
     openGraph: {
       type: "website",
       locale: "en_US",
       url: baseUrl,
       siteName: siteName,
-      title: `${siteName} — ${tagline}`,
-      description,
+      title: seo.og_title || seo.title,
+      description: seo.og_description || seo.description,
+      images: seo.og_image ? [{ url: seo.og_image }] : undefined,
     },
     twitter: {
       card: "summary_large_image",
-      title: `${siteName} — ${tagline}`,
-      description,
+      title: seo.og_title || seo.title,
+      description: seo.og_description || seo.description,
+      images: seo.og_image ? [seo.og_image] : undefined,
     },
-    robots: {
-      index: true,
-      follow: true,
-    },
+    robots: seo.noindex
+      ? { index: false, follow: false }
+      : { index: true, follow: true },
   };
 }
 

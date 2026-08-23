@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -43,6 +43,14 @@ export function ProductDetailClient({
   const product = initialProduct;
   const { addItem, openDrawer, closeDrawer } = useCart();
   const router = useRouter();
+
+  // Next's scroll-to-top-on-navigate can land mid-page instead of the top
+  // when this route streams in behind loading.tsx — force it explicitly
+  // rather than depend on that timing. Re-fires per product so clicking a
+  // related product (same route pattern, new slug) also resets scroll.
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [product.id]);
 
   const [activeImage, setActiveImage] = useState<number>(0);
   const [showVideo, setShowVideo] = useState<boolean>(false);
