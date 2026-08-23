@@ -72,14 +72,20 @@ export default async function ProductDetailPage({
 }) {
   const { slug } = await params;
   const host = await getSiteHost();
-  const product = await getSiteProduct(host, slug);
+  // All three fetches are independent — only the notFound() gate and the
+  // related-products filter below actually depend on `product`'s value, not
+  // on fetch order. Firing them together removes a real waterfall (was:
+  // product, then config, then products — three sequential round trips).
+  const [product, config, allProducts] = await Promise.all([
+    getSiteProduct(host, slug),
+    getSiteConfig(host),
+    getSiteProducts(host),
+  ]);
 
   if (!product) {
     notFound();
   }
 
-  const config = await getSiteConfig(host);
-  const allProducts = await getSiteProducts(host);
   const related = allProducts.filter(
     (p) => p.id !== product.id && p.categoryId === product.categoryId,
   );
