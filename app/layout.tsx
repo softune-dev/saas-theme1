@@ -297,10 +297,12 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     metadataBase: new URL(baseUrl),
-    title: {
-      default: seo.title,
-      template: `%s | ${siteName}`,
-    },
+    // No title.template here: pages that use buildMetadata() already opt
+    // out via { absolute: seo.title } (see that function's own comment for
+    // why — a template would double-suffix an already-suffixed title), and
+    // the product page composes its own full title manually. A template on
+    // this layout would only ever double-suffix, never usefully apply.
+    title: seo.title,
     description: seo.description,
     keywords: seo.keywords || undefined,
     alternates: {
