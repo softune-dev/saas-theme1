@@ -125,6 +125,7 @@ export function SectionRenderer({
     case "testimonials":
       return (
         <TestimonialsSection
+          testimonialsMode={settings.testimonialsMode}
           testimonialsTitle={settings.testimonialsTitle}
           testimonials={settings.testimonials}
         />
