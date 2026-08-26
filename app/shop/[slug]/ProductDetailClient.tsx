@@ -5,20 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import {
-  Minus,
-  Plus,
-  Package,
-  ShieldCheck,
-  Heart,
-  Truck,
-  Leaf,
-  Award,
-  Sparkles,
-  Gem,
-  Star,
-  Play,
-} from "lucide-react";
+import { Minus, Plus, Play } from "lucide-react";
+import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { Product } from "@/lib/theme-types";
 import { formatTaka } from "@/lib/utils";
 import { toEmbedUrl } from "@/lib/video";
@@ -29,9 +17,9 @@ import { Footer } from "@/components/footer/Footer";
 
 const defaultSizes = ["XS", "S", "M", "L", "XL"];
 
-// Cycled by index, not Math.random() — a merchant's feature list must look
-// the same on every visit/render, not reshuffle icons each page load.
-const FEATURE_ICONS = [Package, ShieldCheck, Heart, Truck, Leaf, Award, Sparkles, Gem];
+// Neutral fallback for a feature added before icon-picking existed (or left
+// unset) — never a guess derived from the title text.
+const DEFAULT_FEATURE_ICON: IconName = "star";
 
 export function ProductDetailClient({
   initialProduct,
@@ -60,6 +48,11 @@ export function ProductDetailClient({
   const [selectedColor, setSelectedColor] = useState<string | undefined>(
     product.colors?.[0]?.name
   );
+  // A color value with its own photo (dashboard variant image) overrides the
+  // main stage — set only on an explicit swatch click, cleared the moment a
+  // gallery thumbnail (or a color with no photo) is picked, so the merchant's
+  // own gallery order/browsing never gets silently overridden by default.
+  const [colorImage, setColorImage] = useState<string | null>(null);
   const [quantity, setQuantity] = useState<number>(1);
 
   const handleBuyNow = () => {
@@ -136,9 +129,9 @@ export function ProductDetailClient({
                   className="absolute inset-0 h-full w-full object-cover object-center"
                 />
               )
-            ) : product.images[activeImage] || product.images[0] ? (
+            ) : colorImage || product.images[activeImage] || product.images[0] ? (
               <Image
-                src={product.images[activeImage] || product.images[0]}
+                src={colorImage || product.images[activeImage] || product.images[0]}
                 alt={product.name}
                 fill
                 priority
@@ -158,6 +151,7 @@ export function ProductDetailClient({
                   onClick={() => {
                     setActiveImage(idx);
                     setShowVideo(false);
+                    setColorImage(null);
                   }}
                   className={`relative w-20 h-28 bg-stone-100 overflow-hidden border shrink-0 transition-opacity ${!showVideo && activeImage === idx
                       ? "border-[var(--brand)] opacity-100"
@@ -231,9 +225,11 @@ export function ProductDetailClient({
             </p>
           ) : null}
 
-          {/* Color Selector — real swatch circles, not text pills. Hex is
-           * derived client-side from the merchant-typed color name
-           * (lib/color-names.ts); nothing stored on the backend changes. */}
+          {/* Color Selector — real swatch circles using the merchant's own
+           * picked hex (dashboard color wheel); colorNameToHex only ever
+           * covers products saved before that existed. A color with its own
+           * photo swaps the main stage image on click (cleared again by
+           * picking a gallery thumbnail or a color with no photo). */}
           {product.colors && product.colors.length > 0 ? (
             <div>
               <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.18em] font-medium text-stone-700">
@@ -247,7 +243,11 @@ export function ProductDetailClient({
                   <button
                     key={c.name}
                     type="button"
-                    onClick={() => setSelectedColor(c.name)}
+                    onClick={() => {
+                      setSelectedColor(c.name);
+                      setColorImage(c.image || null);
+                      setShowVideo(false);
+                    }}
                     aria-label={c.name}
                     title={c.name}
                     className={`size-9 shrink-0 cursor-pointer rounded-full border transition-all ${selectedColor === c.name
@@ -367,10 +367,14 @@ export function ProductDetailClient({
             <div className="space-y-6 text-left pt-6">
               <div className="grid gap-8 text-left md:grid-cols-3 md:gap-12">
                 {features.map((feature, i) => {
-                  const Icon = FEATURE_ICONS[i % FEATURE_ICONS.length] ?? Star;
+                  const iconName = (feature.icon as IconName) || DEFAULT_FEATURE_ICON;
                   return (
                     <div key={i} className="space-y-3">
-                      <Icon strokeWidth={1.25} className="h-6 w-6 text-[var(--foreground)]" />
+                      <DynamicIcon
+                        name={iconName}
+                        strokeWidth={1.25}
+                        className="h-6 w-6 text-[var(--foreground)]"
+                      />
                       <h4 className="text-sm font-semibold uppercase tracking-wider text-[var(--foreground)] md:text-base">
                         {feature.title}
                       </h4>
