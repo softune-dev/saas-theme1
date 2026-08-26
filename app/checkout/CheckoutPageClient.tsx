@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -9,6 +9,12 @@ import { CreditCard, ChevronRight, Check, Copy } from "lucide-react";
 import { useCart } from "@/components/cart/CartContext";
 import { formatTaka } from "@/lib/utils";
 import { submitOrder, type PublicOrderOut } from "@/lib/checkout";
+import { RecaptchaChallengeRequiredError, hasV2Fallback } from "@/lib/recaptcha";
+import { RecaptchaDisclosure } from "@/components/recaptcha-disclosure";
+import {
+  RecaptchaV2Fallback,
+  type RecaptchaV2FallbackHandle,
+} from "@/components/recaptcha-v2-fallback";
 import type { PublicPaymentMethod } from "@/lib/theme-types";
 
 // The field only ever collects the LOCAL part after the fixed "+880"
@@ -78,6 +84,9 @@ export function CheckoutPageClient({
   const [order, setOrder] = useState<PublicOrderOut | null>(null);
   const [placing, setPlacing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [needsChallenge, setNeedsChallenge] = useState(false);
+  const [v2Token, setV2Token] = useState<string | null>(null);
+  const v2Ref = useRef<RecaptchaV2FallbackHandle>(null);
   const [formData, setFormData] = useState({
     phone: "",
     firstName: "",
@@ -126,10 +135,16 @@ export function CheckoutPageClient({
         payment_method: paymentMethod,
         transaction_id:
           paymentMethod === "manual" ? transactionId.trim() : undefined,
-      });
+      }, v2Token ?? "");
       setOrder(placed);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't place your order. Please try again.");
+      if (err instanceof RecaptchaChallengeRequiredError) {
+        setNeedsChallenge(true);
+        setError(hasV2Fallback ? null : err.message);
+      } else {
+        setError(err instanceof Error ? err.message : "Couldn't place your order. Please try again.");
+        v2Ref.current?.reset();
+      }
     } finally {
       setPlacing(false);
     }
@@ -609,6 +624,12 @@ export function CheckoutPageClient({
                   <p className="text-xs text-red-600 pt-2">{error}</p>
                 ) : null}
 
+                {needsChallenge && hasV2Fallback ? (
+                  <div className="pt-2">
+                    <RecaptchaV2Fallback ref={v2Ref} onVerify={setV2Token} />
+                  </div>
+                ) : null}
+
                 {/* Tied to the form via the `form` attribute rather than
                  * living inside it — this is what lets it sit under Order
                  * Summary in the DOM (and therefore below it once the two
@@ -616,12 +637,15 @@ export function CheckoutPageClient({
                 <button
                   type="submit"
                   form="checkout-form"
-                  disabled={placing}
+                  disabled={placing || (needsChallenge && !v2Token)}
                   className="mt-10 w-full rounded-[var(--theme-btn-radius)] bg-[var(--brand)] text-[var(--background)] py-5 text-[13px] uppercase tracking-[0.2em] hover:opacity-90 transition-opacity flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   <span>{placing ? "Placing order…" : "Complete Order"}</span>
                   <ChevronRight strokeWidth={1.5} className="w-4 h-4" />
                 </button>
+                <div className="mt-3">
+                  <RecaptchaDisclosure />
+                </div>
 
               </div>
             </div>

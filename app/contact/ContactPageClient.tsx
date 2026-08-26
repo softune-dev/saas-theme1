@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Send,
@@ -14,6 +14,17 @@ import {
 import { Footer } from "@/components/footer/Footer";
 import { SocialLinks } from "@/components/social-links/SocialLinks";
 import type { Business } from "@/lib/business-context";
+import {
+  RecaptchaChallengeRequiredError,
+  getRecaptchaToken,
+  hasV2Fallback,
+  throwForErrorResponse,
+} from "@/lib/recaptcha";
+import { RecaptchaDisclosure } from "@/components/recaptcha-disclosure";
+import {
+  RecaptchaV2Fallback,
+  type RecaptchaV2FallbackHandle,
+} from "@/components/recaptcha-v2-fallback";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ||
@@ -34,6 +45,9 @@ export function ContactPageClient({
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [needsChallenge, setNeedsChallenge] = useState(false);
+  const [v2Token, setV2Token] = useState<string | null>(null);
+  const v2Ref = useRef<RecaptchaV2FallbackHandle>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,15 +55,28 @@ export function ContactPageClient({
     setSubmitting(true);
     setError(null);
     try {
+      const recaptcha_token = await getRecaptchaToken("contact");
       const res = await fetch(`${API_BASE_URL}/public/site/${host}/contact`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data: { name, phone, subject, message } }),
+        body: JSON.stringify({
+          data: { name, phone, subject, message },
+          recaptcha_token,
+          recaptcha_v2_token: v2Token ?? "",
+        }),
       });
-      if (!res.ok) throw new Error("Couldn't send your message. Please try again.");
+      if (!res.ok) {
+        await throwForErrorResponse(res, "Couldn't send your message. Please try again.");
+      }
       setSubmitted(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong.");
+      if (err instanceof RecaptchaChallengeRequiredError) {
+        setNeedsChallenge(true);
+        setError(hasV2Fallback ? null : err.message);
+      } else {
+        setError(err instanceof Error ? err.message : "Something went wrong.");
+        v2Ref.current?.reset();
+      }
     } finally {
       setSubmitting(false);
     }
@@ -327,14 +354,19 @@ export function ContactPageClient({
 
                 {error ? <p className="text-xs text-red-600">{error}</p> : null}
 
+                {needsChallenge && hasV2Fallback ? (
+                  <RecaptchaV2Fallback ref={v2Ref} onVerify={setV2Token} />
+                ) : null}
+
                 <button
                   type="submit"
-                  disabled={submitting}
+                  disabled={submitting || (needsChallenge && !v2Token)}
                   className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-[var(--theme-btn-radius)] bg-[var(--brand)] py-4 text-sm font-semibold text-[var(--background)] transition-opacity hover:opacity-90 disabled:opacity-60"
                 >
                   <span>{submitting ? "Sending..." : "Send message"}</span>
                   <Send className="size-3.5" />
                 </button>
+                <RecaptchaDisclosure />
               </form>
             )}
           </motion.div>
