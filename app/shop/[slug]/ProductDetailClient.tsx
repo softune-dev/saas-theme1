@@ -212,10 +212,10 @@ export function ProductDetailClient({
             >
               {product.name}
             </h1>
-            <div className="mt-4 text-lg font-medium text-[var(--foreground)] flex items-baseline gap-3">
+            <div className="mt-4 flex items-baseline gap-3 text-2xl font-medium text-[var(--foreground)] sm:text-3xl">
               <span>{formatTaka(product.price)}</span>
               {product.originalPrice && (
-                <span className="line-through text-sm text-stone-400">
+                <span className="text-base text-stone-400 line-through sm:text-lg">
                   {formatTaka(product.originalPrice)}
                 </span>
               )}
@@ -310,24 +310,24 @@ export function ProductDetailClient({
 
               <button
                 onClick={handleAddToCart}
-                className="flex-1 rounded-[var(--theme-btn-radius)] border border-stone-800 text-[var(--foreground)] py-4 text-[12px] uppercase tracking-[0.24em] font-semibold hover:bg-[var(--brand)] hover:text-[var(--background)] transition-all cursor-pointer flex items-center justify-center gap-2"
+                className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-[var(--theme-btn-radius)] border border-stone-800 py-4 text-sm font-semibold text-[var(--foreground)] transition-all hover:bg-[var(--brand)] hover:text-[var(--background)]"
               >
                 <img src="/assets/bag.svg" alt="Bag Icon" className="w-4 h-4" />
                 Add to bag
               </button>
             </div>
 
-            <div className="grid sm:grid-cols-2 gap-3">
+            <div className="grid gap-3 sm:grid-cols-2">
               <button
                 onClick={handleBuyNow}
-                className="rounded-[var(--theme-btn-radius)] bg-[var(--brand)] text-[var(--background)] py-4 text-[12px] uppercase tracking-[0.24em] font-semibold hover:opacity-90 transition-opacity cursor-pointer"
+                className="cursor-pointer rounded-[var(--theme-btn-radius)] bg-[var(--brand)] py-4 text-sm font-semibold text-[var(--background)] transition-opacity hover:opacity-90"
               >
                 Buy Now
               </button>
 
               <button
                 onClick={handleWhatsAppBuy}
-                className="rounded-[var(--theme-btn-radius)] border border-stone-300 bg-transparent text-[var(--foreground)] py-4 text-[12px] uppercase tracking-[0.24em] font-semibold hover:border-[var(--brand)] transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                className="flex cursor-pointer items-center justify-center gap-2 rounded-[var(--theme-btn-radius)] border border-stone-300 bg-transparent py-4 text-sm font-semibold text-[var(--foreground)] transition-colors hover:border-[var(--brand)]"
               >
                 <img src="/assets/whatsapp.svg" alt="WhatsApp Icon" className="w-4.5 h-4.5" />
                 Order via WhatsApp

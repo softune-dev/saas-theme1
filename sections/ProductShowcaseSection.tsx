@@ -59,7 +59,7 @@ export function ProductShowcaseSection({
           className="grid w-full grid-cols-1 items-center gap-8 lg:grid-cols-2 lg:gap-12"
         >
           {/* Image — top on mobile, left on desktop */}
-          <div className="relative aspect-[3/4] w-full overflow-hidden bg-stone-200 sm:aspect-[4/5]">
+          <div className="relative aspect-square w-full overflow-hidden bg-stone-200">
             {image ? (
               <Image
                 src={image}
@@ -88,9 +88,8 @@ export function ProductShowcaseSection({
 
             {sizes.length > 0 ? (
               <div>
-                <div className="flex items-center justify-between text-[11px] font-medium uppercase tracking-[0.18em] text-stone-700">
+                <div className="text-[11px] font-medium uppercase tracking-[0.18em] text-stone-700">
                   <span>Size</span>
-                  <span className="text-stone-400">Standard fit</span>
                 </div>
                 <div className="mt-3 grid grid-cols-5 gap-2">
                   {sizes.map((s) => (

@@ -51,24 +51,24 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
             {product.categoryName}
           </div>
 
-          {/* Product Name */}
+          {/* Product Name — wrap instead of truncating */}
           <h3
             style={{ fontFamily: '"Fraunces", Georgia, serif' }}
-            className="font-display text-[13px] sm:text-base md:text-lg text-[var(--foreground)] line-clamp-1 group-hover:opacity-75 transition-opacity"
+            className="font-display text-base sm:text-lg md:text-xl leading-snug text-[var(--foreground)] group-hover:opacity-75 transition-opacity"
           >
             {product.name}
           </h3>
 
-          {/* Pricing */}
-          <div className="flex items-baseline gap-1.5 text-xs sm:text-sm font-medium">
-            {product.originalPrice && (
-              <span className="line-through text-stone-400 text-[10px] sm:text-xs">
-                {formatTaka(product.originalPrice)}
-              </span>
-            )}
+          {/* Pricing — main left, compare to its right */}
+          <div className="flex items-baseline gap-2 text-xs sm:text-sm font-medium">
             <span className="text-[var(--foreground)]">
               {formatTaka(product.price)}
             </span>
+            {product.originalPrice ? (
+              <span className="line-through text-stone-400 text-[10px] sm:text-xs">
+                {formatTaka(product.originalPrice)}
+              </span>
+            ) : null}
           </div>
         </div>
       </Link>

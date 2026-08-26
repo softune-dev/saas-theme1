@@ -186,25 +186,25 @@ export function ProductReviews({ averageRating = 0, totalReviews = 0 }: ProductR
               )}
             </div>
           ) : reviewsList.length === 0 ? (
-            <div className="flex flex-col items-end gap-4 text-right">
-              <p className="w-full text-sm text-stone-500 text-left sm:text-right">
-                No reviews yet — be the first to share your experience.
+            <div className="flex flex-col items-start gap-4 text-left md:items-end md:text-right">
+              <p className="w-full text-left text-sm text-stone-500 md:text-right">
+                No reviews yet. Be the first to share your experience.
               </p>
               <button
                 type="button"
                 onClick={() => setShowForm(true)}
-                className="rounded-[var(--theme-btn-radius)] bg-[var(--brand)] text-[var(--background)] px-8 py-3 text-[11px] uppercase tracking-[0.24em] font-semibold hover:opacity-90 transition-opacity"
+                className="rounded-[var(--theme-btn-radius)] bg-[var(--brand)] px-8 py-3 text-[11px] font-semibold tracking-[0.24em] text-[var(--background)] uppercase transition-opacity hover:opacity-90"
               >
                 Write a Review
               </button>
             </div>
           ) : (
             <div className="space-y-8">
-              <div className="flex justify-end">
+              <div className="flex justify-start md:justify-end">
                 <button
                   type="button"
                   onClick={() => setShowForm(true)}
-                  className="rounded-[var(--theme-btn-radius)] bg-[var(--brand)] text-[var(--background)] px-8 py-3 text-[11px] uppercase tracking-[0.24em] font-semibold hover:opacity-90 transition-opacity"
+                  className="rounded-[var(--theme-btn-radius)] bg-[var(--brand)] px-8 py-3 text-[11px] font-semibold tracking-[0.24em] text-[var(--background)] uppercase transition-opacity hover:opacity-90"
                 >
                   Write a Review
                 </button>

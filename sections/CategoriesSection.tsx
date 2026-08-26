@@ -81,11 +81,13 @@ export function CategoriesSection({
                     className="h-full w-full object-cover object-center transition-transform duration-[1.2s] ease-[0.22,1,0.36,1] group-hover:scale-105"
                   />
                 ) : null}
-                <div className="absolute inset-0 bg-transparent transition-colors duration-700 group-hover:bg-black/30" />
+                <div className="absolute inset-0 bg-transparent transition-colors duration-700 group-hover:bg-black/20" />
+                {/* Always-on bottom scrim so category titles stay readable on light images */}
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[5] h-[42%] bg-gradient-to-t from-black/75 via-black/35 to-transparent" />
                 <div className="absolute inset-x-0 bottom-0 p-6 md:p-8 flex items-end justify-between text-white z-10">
                   <h3
                     style={{ fontFamily: '"Fraunces", Georgia, serif' }}
-                    className="font-display text-2xl md:text-3xl text-white font-normal"
+                    className="font-display text-2xl md:text-3xl text-white font-normal drop-shadow-sm"
                   >
                     {cat.name}
                   </h3>

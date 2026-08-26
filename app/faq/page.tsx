@@ -32,7 +32,7 @@ export default async function FAQPage() {
       : null;
 
   return (
-    <div className="min-h-screen bg-[var(--background)] flex flex-col text-[var(--foreground)]">
+    <div className="flex min-h-screen flex-col bg-[var(--background)] text-[var(--foreground)]">
       {faqSchema ? (
         <script
           type="application/ld+json"
@@ -41,27 +41,27 @@ export default async function FAQPage() {
           }}
         />
       ) : null}
-      {/* Header Banner */}
-      <div className="bg-stone-50 border-b hairline py-12 sm:py-16">
-        <div className="max-w-[1400px] mx-auto px-6 md:px-10 text-center space-y-3">
-          <span className="eyebrow justify-center">Help & Answers</span>
+
+      {/* Editorial header — same language as About / Contact */}
+      <section className="mx-auto max-w-[1600px] px-6 pt-16 text-center md:px-10 md:pt-24">
+        <div className="mx-auto max-w-3xl space-y-5">
+          <span className="eyebrow justify-center">Help & answers</span>
           <h1
-            style={{ fontFamily: '"Fraunces", Georgia, serif' }}
-            className="font-display text-4xl sm:text-5xl font-semibold tracking-tight text-[var(--foreground)]"
+            style={{ fontFamily: "var(--font-display)" }}
+            className="font-display text-4xl leading-[0.95] tracking-tight text-[var(--foreground)] sm:text-6xl md:text-7xl"
           >
-            Faq.
+            FAQ.
           </h1>
-          <p className="text-sm text-stone-500 max-w-lg mx-auto">
-            Everything you need to know about our products, delivery timelines, and exchange policies.
+          <p className="mx-auto max-w-xl text-base leading-relaxed text-stone-500 md:text-lg">
+            Everything you need to know about products, delivery, and exchanges.
           </p>
         </div>
-      </div>
+      </section>
 
-      {/* Accordion Questions */}
-      <div className="max-w-4xl mx-auto px-6 md:px-10 py-12 sm:py-16 flex-1 w-full space-y-10 text-left">
+      <section className="mx-auto w-full max-w-3xl flex-1 px-6 py-16 md:px-10 md:py-24">
         {faqs.length === 0 ? (
           <p className="text-center text-sm text-stone-500">
-            No frequently asked questions yet — check back soon.
+            No frequently asked questions yet. Check back soon.
           </p>
         ) : (
           <Accordion>
@@ -73,33 +73,32 @@ export default async function FAQPage() {
           </Accordion>
         )}
 
-        {/* Help Banner */}
-        <div className="p-8 bg-stone-50 border hairline flex flex-col sm:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 border border-stone-300 bg-stone-100 flex items-center justify-center text-[var(--foreground)] shrink-0">
-              <HelpCircle className="w-5 h-5" />
-            </div>
+        <div className="mt-16 flex flex-col items-center justify-between gap-6 border border-stone-200 bg-stone-50/50 p-8 text-center sm:flex-row sm:text-left">
+          <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-center">
+            <span className="flex size-11 shrink-0 items-center justify-center rounded-full border border-stone-200 bg-[var(--background)] text-[var(--foreground)]">
+              <HelpCircle className="size-5" strokeWidth={1.25} />
+            </span>
             <div>
               <h3
-                style={{ fontFamily: '"Fraunces", Georgia, serif' }}
-                className="font-display text-lg text-[var(--foreground)]"
+                style={{ fontFamily: "var(--font-display)" }}
+                className="font-display text-xl text-[var(--foreground)]"
               >
                 Still have questions?
               </h3>
-              <p className="text-xs text-stone-500 mt-0.5">
+              <p className="mt-0.5 text-sm text-stone-500">
                 Reach out and our team will get back to you.
               </p>
             </div>
           </div>
           <Link
             href="/contact"
-            className="inline-flex items-center gap-2 rounded-[var(--theme-btn-radius)] bg-[var(--brand)] text-[var(--background)] px-6 py-3 text-[11px] uppercase tracking-wider font-semibold hover:opacity-90 transition-opacity"
+            className="inline-flex items-center gap-2 rounded-[var(--theme-btn-radius)] bg-[var(--brand)] px-6 py-3 text-sm font-semibold text-[var(--background)] transition-opacity hover:opacity-90"
           >
-            <span>Contact Concierge</span>
-            <ArrowRight className="w-4 h-4" />
+            <span>Contact us</span>
+            <ArrowRight className="size-4" />
           </Link>
         </div>
-      </div>
+      </section>
 
       <Footer />
     </div>

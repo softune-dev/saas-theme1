@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Truck, CreditCard, ChevronRight } from "lucide-react";
+import { CreditCard, ChevronRight, Check, Copy } from "lucide-react";
 import { useCart } from "@/components/cart/CartContext";
 import { formatTaka } from "@/lib/utils";
 import { submitOrder, type PublicOrderOut } from "@/lib/checkout";
@@ -32,6 +32,14 @@ const PAYMENT_LABELS: Record<PublicPaymentMethod["provider"], string> = {
   rocket: "Rocket",
 };
 
+/** Storefront logos for checkout payment UI (public/assets). */
+const WALLET_LOGOS: Record<string, string> = {
+  bkash: "/assets/bkash.webp",
+  nagad: "/assets/nagad.webp",
+  cod: "/assets/cod.webp",
+  manual: "/assets/manual.webp",
+};
+
 export function CheckoutPageClient({
   host,
   siteName,
@@ -56,6 +64,7 @@ export function CheckoutPageClient({
   const [transactionId, setTransactionId] = useState("");
   const [txnIdError, setTxnIdError] = useState<string | null>(null);
   const [phoneError, setPhoneError] = useState<string | null>(null);
+  const [paymentNumberCopied, setPaymentNumberCopied] = useState(false);
   const {
     items,
     subtotal,
@@ -135,7 +144,7 @@ export function CheckoutPageClient({
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center px-6 bg-[var(--background)]">
         <h1
-          style={{ fontFamily: '"Fraunces", Georgia, serif' }}
+          style={{ fontFamily: "var(--font-display)" }}
           className="font-display text-4xl mb-4 text-[var(--foreground)]"
         >
           Your cart is empty
@@ -157,7 +166,7 @@ export function CheckoutPageClient({
     <div className="min-h-screen w-full overflow-x-hidden bg-[var(--background)] pb-24 text-[var(--foreground)]">
       <div className="mx-auto w-full max-w-[1400px] px-6 md:px-10 pt-12 md:pt-16">
         <h1
-          style={{ fontFamily: '"Fraunces", Georgia, serif' }}
+          style={{ fontFamily: "var(--font-display)" }}
           className="font-display text-4xl md:text-5xl mb-12 text-[var(--foreground)]"
         >
           Checkout.
@@ -169,18 +178,17 @@ export function CheckoutPageClient({
           <div className="min-w-0 lg:col-span-7 space-y-12">
             <form id="checkout-form" onSubmit={handleSubmit} className="space-y-10">
 
-              {/* Contact Information — phone only, no email option. Nothing
-               * in checkout verifies identity (no OTP), so a real BD mobile
-               * number is the one thing standing between an order and spam;
-               * see app/api/public.py's _validate_bd_phone, which this
-               * mirrors and is the actual enforcement. */}
+              {/* Contact — phone only; BD mobile is the order contact channel. */}
               <section className="text-left">
-                <h2 className="text-[13px] uppercase tracking-[0.2em] mb-6 font-medium text-stone-500">
-                  Phone Number
+                <h2 className="mb-5 text-sm font-semibold tracking-wide text-[var(--foreground)]">
+                  Phone number
                 </h2>
                 <div>
-                  <div className="flex items-center gap-2 border-b hairline focus-within:border-[var(--brand)] transition-colors">
-                    <span className="flex shrink-0 items-center gap-1.5 py-3 text-sm text-[var(--foreground)]">
+                  <label className="mb-1.5 block text-xs font-medium text-stone-500">
+                    Mobile *
+                  </label>
+                  <div className="flex items-center gap-2 border border-stone-300 bg-stone-50 px-3 transition-colors focus-within:border-[var(--brand)] focus-within:bg-[var(--background)]">
+                    <span className="flex shrink-0 items-center gap-1.5 py-3.5 text-sm font-medium text-[var(--foreground)]">
                       <span aria-hidden="true">🇧🇩</span>
                       +880
                     </span>
@@ -191,18 +199,17 @@ export function CheckoutPageClient({
                       placeholder="1XXXXXXXXX"
                       value={formData.phone}
                       onChange={(e) => {
-                        // Digits only, capped at 10 — the local part after +880.
                         const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
                         setFormData({ ...formData, phone: digits });
                         if (phoneError) setPhoneError(null);
                       }}
-                      className="w-full min-w-0 flex-1 bg-transparent py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-stone-400"
+                      className="w-full min-w-0 flex-1 bg-transparent py-3.5 text-base text-[var(--foreground)] outline-none placeholder:text-stone-400"
                     />
                   </div>
                   {phoneError ? (
                     <p className="mt-2 text-xs text-red-600">{phoneError}</p>
                   ) : (
-                    <p className="mt-2 text-xs text-stone-450">
+                    <p className="mt-2 text-xs text-stone-500">
                       We&apos;ll use this number to confirm your order.
                     </p>
                   )}
@@ -211,18 +218,13 @@ export function CheckoutPageClient({
 
               {/* Shipping Address */}
               <section className="text-left">
-                <h2 className="text-[13px] uppercase tracking-[0.2em] mb-6 font-medium text-stone-500">
-                  Shipping Address
+                <h2 className="mb-5 text-sm font-semibold tracking-wide text-[var(--foreground)]">
+                  Shipping address
                 </h2>
-                <div className="space-y-4">
-                  {/* Real delivery locations the admin configured on the
-                   * products in this cart — only shown when there's an
-                   * actual choice to make. A selectable option grid, not a
-                   * native dropdown, so the customer sees every choice at a
-                   * glance. Placed first since it affects the total. */}
+                <div className="space-y-5">
                   {deliveryLocations.length > 1 && (
-                    <div className="pb-2">
-                      <label className="block text-xs uppercase tracking-[0.18em] text-stone-500 mb-3">
+                    <div>
+                      <label className="mb-2 block text-xs font-medium text-stone-500">
                         Delivery to
                       </label>
                       <div className="grid grid-cols-1 gap-2 sm:flex sm:flex-wrap">
@@ -232,10 +234,10 @@ export function CheckoutPageClient({
                             type="button"
                             onClick={() => setDeliveryLocation(loc)}
                             aria-pressed={selectedDeliveryLocation === loc}
-                            className={`w-full sm:w-auto px-4 py-2.5 text-sm border transition-colors cursor-pointer ${
+                            className={`w-full cursor-pointer border px-4 py-2.5 text-sm font-medium transition-colors sm:w-auto ${
                               selectedDeliveryLocation === loc
                                 ? "border-[var(--brand)] bg-[var(--brand)] text-[var(--background)]"
-                                : "border-stone-300 text-[var(--foreground)] hover:border-[var(--brand)]"
+                                : "border-stone-300 bg-stone-50 text-[var(--foreground)] hover:border-[var(--brand)]"
                             }`}
                           >
                             {loc}
@@ -245,57 +247,92 @@ export function CheckoutPageClient({
                     </div>
                   )}
                   {deliveryLocations.length === 1 && (
-                    <div className="pb-2 flex items-center justify-between text-sm">
-                      <span className="text-xs uppercase tracking-[0.18em] text-stone-500">
-                        Delivery to
+                    <div className="flex items-center justify-between border border-stone-200 bg-stone-50 px-4 py-3 text-sm">
+                      <span className="text-xs font-medium text-stone-500">Delivery to</span>
+                      <span className="font-medium text-[var(--foreground)]">
+                        {deliveryLocations[0]}
                       </span>
-                      <span className="text-[var(--foreground)]">{deliveryLocations[0]}</span>
                     </div>
                   )}
 
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                    <div>
+                      <label className="mb-1.5 block text-xs font-medium text-stone-500">
+                        First name *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="First name"
+                        value={formData.firstName}
+                        onChange={(e) =>
+                          setFormData({ ...formData, firstName: e.target.value })
+                        }
+                        className="w-full border border-stone-300 bg-stone-50 px-3.5 py-3.5 text-base text-[var(--foreground)] outline-none transition-colors placeholder:text-stone-400 focus:border-[var(--brand)] focus:bg-[var(--background)]"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-xs font-medium text-stone-500">
+                        Last name *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="Last name"
+                        value={formData.lastName}
+                        onChange={(e) =>
+                          setFormData({ ...formData, lastName: e.target.value })
+                        }
+                        className="w-full border border-stone-300 bg-stone-50 px-3.5 py-3.5 text-base text-[var(--foreground)] outline-none transition-colors placeholder:text-stone-400 focus:border-[var(--brand)] focus:bg-[var(--background)]"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-xs font-medium text-stone-500">
+                      Address *
+                    </label>
                     <input
                       type="text"
                       required
-                      placeholder="First name"
-                      value={formData.firstName}
-                      onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                      className="w-full bg-transparent border-b hairline py-3 text-sm text-[var(--foreground)] outline-none focus:border-[var(--brand)] transition-colors placeholder:text-stone-400"
-                    />
-                    <input
-                      type="text"
-                      required
-                      placeholder="Last name"
-                      value={formData.lastName}
-                      onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                      className="w-full bg-transparent border-b hairline py-3 text-sm text-[var(--foreground)] outline-none focus:border-[var(--brand)] transition-colors placeholder:text-stone-400"
+                      placeholder="House, road, area"
+                      value={formData.address}
+                      onChange={(e) =>
+                        setFormData({ ...formData, address: e.target.value })
+                      }
+                      className="w-full border border-stone-300 bg-stone-50 px-3.5 py-3.5 text-base text-[var(--foreground)] outline-none transition-colors placeholder:text-stone-400 focus:border-[var(--brand)] focus:bg-[var(--background)]"
                     />
                   </div>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Address"
-                    value={formData.address}
-                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                    className="w-full bg-transparent border-b hairline py-3 text-sm text-[var(--foreground)] outline-none focus:border-[var(--brand)] transition-colors placeholder:text-stone-400"
-                  />
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <input
-                      type="text"
-                      required
-                      placeholder="City"
-                      value={formData.city}
-                      onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                      className="w-full bg-transparent border-b hairline py-3 text-sm text-[var(--foreground)] outline-none focus:border-[var(--brand)] transition-colors placeholder:text-stone-400"
-                    />
-                    <input
-                      type="text"
-                      required
-                      placeholder="Postal Code"
-                      value={formData.zip}
-                      onChange={(e) => setFormData({ ...formData, zip: e.target.value })}
-                      className="w-full bg-transparent border-b hairline py-3 text-sm text-[var(--foreground)] outline-none focus:border-[var(--brand)] transition-colors placeholder:text-stone-400"
-                    />
+                  <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                    <div>
+                      <label className="mb-1.5 block text-xs font-medium text-stone-500">
+                        City *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="City"
+                        value={formData.city}
+                        onChange={(e) =>
+                          setFormData({ ...formData, city: e.target.value })
+                        }
+                        className="w-full border border-stone-300 bg-stone-50 px-3.5 py-3.5 text-base text-[var(--foreground)] outline-none transition-colors placeholder:text-stone-400 focus:border-[var(--brand)] focus:bg-[var(--background)]"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-xs font-medium text-stone-500">
+                        Postal code *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="Postal code"
+                        value={formData.zip}
+                        onChange={(e) =>
+                          setFormData({ ...formData, zip: e.target.value })
+                        }
+                        className="w-full border border-stone-300 bg-stone-50 px-3.5 py-3.5 text-base text-[var(--foreground)] outline-none transition-colors placeholder:text-stone-400 focus:border-[var(--brand)] focus:bg-[var(--background)]"
+                      />
+                    </div>
                   </div>
                 </div>
               </section>
@@ -305,49 +342,48 @@ export function CheckoutPageClient({
                * No fabricated COD default: if nothing is enabled yet, say so
                * honestly rather than silently offering COD anyway. */}
               <section className="text-left">
-                <h2 className="text-[13px] uppercase tracking-[0.2em] mb-6 font-medium text-stone-500">
-                  Payment Method
+                <h2 className="mb-5 text-sm font-semibold tracking-wide text-[var(--foreground)]">
+                  Payment method
                 </h2>
                 {checkoutReadyMethods.length === 0 ? (
-                  <p className="text-sm text-stone-500 border hairline p-4 bg-stone-100/40">
-                    This store hasn't enabled a payment method yet. Please contact them directly to complete your order.
+                  <p className="border border-stone-200 bg-stone-50 p-4 text-sm text-stone-500">
+                    This store hasn&apos;t enabled a payment method yet. Please
+                    contact them directly to complete your order.
                   </p>
                 ) : (
                   <div className="space-y-3">
                     {checkoutReadyMethods.map((method) => {
                       const selected = paymentMethod === method.provider;
+                      const isManual = method.provider === "manual";
                       return (
                         <label
                           key={method.provider}
-                          className={`block p-4 border cursor-pointer transition-colors ${
-                            selected ? "border-[var(--brand)] bg-[var(--background)]" : "hairline hover:border-[var(--brand)]"
+                          className={`block cursor-pointer border p-5 transition-colors ${
+                            selected
+                              ? "border-[var(--brand)] bg-[var(--background)]"
+                              : "border-stone-200 bg-stone-50/60 hover:border-stone-300"
                           }`}
                         >
                           <div className="flex items-center justify-between gap-3">
                             <div className="flex min-w-0 items-center gap-3">
                               <div
-                                className={`w-4 h-4 shrink-0 rounded-full border flex items-center justify-center ${
-                                  selected ? "border-[var(--brand)] bg-[var(--brand)]" : "hairline"
+                                className={`flex size-5 shrink-0 items-center justify-center rounded-full border ${
+                                  selected
+                                    ? "border-[var(--brand)] bg-[var(--brand)]"
+                                    : "border-stone-300"
                                 }`}
                               >
                                 {selected ? (
-                                  <div className="w-1.5 h-1.5 bg-[var(--background)] rounded-full" />
+                                  <div className="size-1.5 rounded-full bg-[var(--background)]" />
                                 ) : null}
                               </div>
                               <div className="min-w-0">
-                                <span className="text-sm font-medium text-[var(--foreground)]">
+                                <span className="text-base font-semibold text-[var(--foreground)]">
                                   {method.label || PAYMENT_LABELS[method.provider]}
                                 </span>
-                                {selected && method.provider === "manual" && method.config.payment_number ? (
-                                  <p className="text-xs text-stone-500 mt-1">
-                                    Send payment to{" "}
-                                    <strong className="text-[var(--foreground)]">
-                                      {method.config.payment_number}
-                                    </strong>
-                                    {method.config.wallets?.length
-                                      ? ` via ${method.config.wallets.join(", ")}`
-                                      : ""}
-                                    , then enter your transaction ID below.
+                                {method.provider === "cod" ? (
+                                  <p className="mt-0.5 text-xs text-stone-500">
+                                    Pay when your order arrives
                                   </p>
                                 ) : null}
                               </div>
@@ -362,34 +398,130 @@ export function CheckoutPageClient({
                                 setTxnIdError(null);
                               }}
                             />
-                            {method.provider === "cod" ? (
-                              <Truck strokeWidth={1.5} className="w-5 h-5 text-stone-400 shrink-0" />
+                            {WALLET_LOGOS[method.provider] ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                src={WALLET_LOGOS[method.provider]}
+                                alt=""
+                                className="h-7 w-auto shrink-0 object-contain"
+                              />
                             ) : (
-                              <CreditCard strokeWidth={1.5} className="w-5 h-5 text-stone-400 shrink-0" />
+                              <CreditCard
+                                strokeWidth={1.5}
+                                className="size-5 shrink-0 text-stone-400"
+                              />
                             )}
                           </div>
-                          {selected && method.provider === "manual" ? (
+
+                          {selected && isManual ? (
                             <div
-                              className="mt-4 pl-7"
+                              className="mt-5 space-y-4 border border-stone-200 bg-stone-50 p-4"
                               onClick={(e) => e.stopPropagation()}
                               onKeyDown={(e) => e.stopPropagation()}
                             >
-                              <input
-                                type="text"
-                                name="transaction_id"
-                                autoComplete="off"
-                                placeholder="Transaction ID"
-                                value={transactionId}
-                                required={paymentMethod === "manual"}
-                                onChange={(e) => {
-                                  setTransactionId(e.target.value);
-                                  if (txnIdError) setTxnIdError(null);
-                                }}
-                                className="w-full bg-transparent border-b hairline py-2.5 text-sm text-[var(--foreground)] outline-none focus:border-[var(--brand)] transition-colors placeholder:text-stone-400"
-                              />
-                              {txnIdError ? (
-                                <p className="mt-1.5 text-xs text-red-600">{txnIdError}</p>
+                              {method.config.payment_number ? (
+                                <div>
+                                  <p className="text-xs font-medium text-stone-500">
+                                    Send payment to
+                                  </p>
+                                  <div className="mt-1 flex items-center gap-2">
+                                    <p className="text-lg font-semibold text-[var(--foreground)]">
+                                      {method.config.payment_number}
+                                    </p>
+                                    <button
+                                      type="button"
+                                      aria-label={
+                                        paymentNumberCopied
+                                          ? "Copied"
+                                          : "Copy payment number"
+                                      }
+                                      onClick={async (e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        const number =
+                                          method.config.payment_number;
+                                        if (!number) return;
+                                        try {
+                                          await navigator.clipboard.writeText(
+                                            number,
+                                          );
+                                          setPaymentNumberCopied(true);
+                                          window.setTimeout(
+                                            () => setPaymentNumberCopied(false),
+                                            1500,
+                                          );
+                                        } catch {
+                                          /* clipboard may be blocked; number stays visible to copy manually */
+                                        }
+                                      }}
+                                      className="inline-flex size-8 shrink-0 items-center justify-center border border-stone-200 bg-[var(--background)] text-stone-500 transition-colors hover:border-stone-300 hover:text-[var(--foreground)]"
+                                    >
+                                      {paymentNumberCopied ? (
+                                        <Check
+                                          strokeWidth={1.75}
+                                          className="size-3.5 text-emerald-600"
+                                        />
+                                      ) : (
+                                        <Copy
+                                          strokeWidth={1.75}
+                                          className="size-3.5"
+                                        />
+                                      )}
+                                    </button>
+                                  </div>
+                                  {method.config.wallets?.length ? (
+                                    <div className="mt-3 flex flex-wrap items-center gap-2">
+                                      {method.config.wallets.map((w) => {
+                                        const key = w.toLowerCase();
+                                        const logo = WALLET_LOGOS[key];
+                                        return logo ? (
+                                          <span
+                                            key={w}
+                                            className="inline-flex items-center bg-[var(--background)] px-2.5 py-1.5 ring-1 ring-stone-200"
+                                          >
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                            <img
+                                              src={logo}
+                                              alt={w}
+                                              className="h-6 w-auto object-contain"
+                                            />
+                                          </span>
+                                        ) : (
+                                          <span
+                                            key={w}
+                                            className="bg-[var(--background)] px-2.5 py-1 text-[11px] font-semibold capitalize text-[var(--foreground)] ring-1 ring-stone-200"
+                                          >
+                                            {w}
+                                          </span>
+                                        );
+                                      })}
+                                    </div>
+                                  ) : null}
+                                </div>
                               ) : null}
+                              <div>
+                                <label className="mb-1.5 block text-xs font-medium text-stone-500">
+                                  Transaction ID *
+                                </label>
+                                <input
+                                  type="text"
+                                  name="transaction_id"
+                                  autoComplete="off"
+                                  placeholder="e.g. TXN123456789"
+                                  value={transactionId}
+                                  required={paymentMethod === "manual"}
+                                  onChange={(e) => {
+                                    setTransactionId(e.target.value);
+                                    if (txnIdError) setTxnIdError(null);
+                                  }}
+                                  className="w-full border border-stone-300 bg-[var(--background)] px-3.5 py-3 text-base text-[var(--foreground)] outline-none transition-colors placeholder:text-stone-400 focus:border-[var(--brand)]"
+                                />
+                                {txnIdError ? (
+                                  <p className="mt-1.5 text-xs text-red-600">
+                                    {txnIdError}
+                                  </p>
+                                ) : null}
+                              </div>
                             </div>
                           ) : null}
                         </label>
@@ -431,7 +563,7 @@ export function CheckoutPageClient({
                       </div>
                       <div className="flex-1 min-w-0 text-left">
                         <div
-                          style={{ fontFamily: '"Fraunces", Georgia, serif' }}
+                          style={{ fontFamily: "var(--font-display)" }}
                           className="font-display text-lg truncate text-[var(--foreground)]"
                         >
                           {i.product.name}
@@ -447,7 +579,7 @@ export function CheckoutPageClient({
                   ))}
                 </ul>
 
-                <div className="space-y-3 pt-6 border-t hairline text-sm text-stone-550">
+                <div className="space-y-3 text-sm text-stone-550">
                   <div className="flex justify-between">
                     <span>Subtotal</span>
                     <span>{formatTaka(subtotal)}</span>
@@ -537,7 +669,7 @@ export function CheckoutPageClient({
                   </div>
                 ) : (
                   <h3
-                    style={{ fontFamily: '"Fraunces", Georgia, serif' }}
+                    style={{ fontFamily: "var(--font-display)" }}
                     className="font-display text-3xl mb-1 text-[#1c1c1c]"
                   >
                     {siteName}
@@ -577,7 +709,7 @@ export function CheckoutPageClient({
               <div className="flex justify-between items-end mb-8">
                 <span className="text-[11px] uppercase tracking-[0.2em] text-stone-700">Total</span>
                 <span
-                  style={{ fontFamily: '"Fraunces", Georgia, serif' }}
+                  style={{ fontFamily: "var(--font-display)" }}
                   className="font-display text-2xl text-[#1c1c1c] font-bold"
                 >
                   {formatTaka(order.total_cents / 100)}
