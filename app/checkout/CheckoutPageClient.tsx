@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -10,6 +10,7 @@ import { useCart } from "@/components/cart/CartContext";
 import { formatTaka } from "@/lib/utils";
 import { submitOrder, type PublicOrderOut } from "@/lib/checkout";
 import { RecaptchaChallengeRequiredError, hasV2Fallback } from "@/lib/recaptcha";
+import { trackInitiateCheckout, trackPurchase } from "@/lib/tracking";
 import { RecaptchaDisclosure } from "@/components/recaptcha-disclosure";
 import {
   RecaptchaV2Fallback,
@@ -105,6 +106,18 @@ export function CheckoutPageClient({
   const deliveryCharge = deliveryFee;
   const total = subtotal + deliveryCharge;
 
+  // Fires once per real checkout view — not on the empty-cart redirect
+  // render below, and not again on every re-render while the form is filled in.
+  useEffect(() => {
+    if (items.length === 0) return;
+    trackInitiateCheckout(
+      items.map((i) => ({ id: i.product.id, name: i.product.name, price: i.product.price, quantity: i.quantity })),
+      total,
+      "BDT",
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fire once on mount with a non-empty cart, not on every total/items identity change
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (items.length === 0 || placing || !paymentMethod) return;
@@ -137,6 +150,16 @@ export function CheckoutPageClient({
           paymentMethod === "manual" ? transactionId.trim() : undefined,
       }, v2Token ?? "");
       setOrder(placed);
+      // PublicOrderItemOut never carries product_id (deliberately minimal —
+      // see its docstring), so this uses the cart's own items for real ids
+      // instead of the order response, combined with the order's actual
+      // charged total/currency/order_number.
+      trackPurchase({
+        orderId: placed.order_number,
+        value: placed.total_cents / 100,
+        currency: placed.currency,
+        items: items.map((i) => ({ id: i.product.id, name: i.product.name, price: i.product.price, quantity: i.quantity })),
+      });
     } catch (err) {
       if (err instanceof RecaptchaChallengeRequiredError) {
         setNeedsChallenge(true);
