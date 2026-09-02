@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Filter } from "lucide-react";
-import type { Product, ProductCategory } from "@/lib/theme-types";
+import type { Event, Product, ProductCategory } from "@/lib/theme-types";
 import { ProductCard } from "@/components/product/ProductCard";
 import { Footer } from "@/components/footer/Footer";
 
@@ -15,11 +15,13 @@ const sortOptions = ["Featured", "Price: Low to High", "Price: High to Low", "Hi
 type ShopPageClientProps = {
   categories: ProductCategory[];
   products: Product[];
+  events: Event[];
 };
 
 export function ShopPageClient({
   categories: allCategories,
   products: allProducts,
+  events,
 }: ShopPageClientProps) {
   const searchParams = useSearchParams();
 
@@ -37,7 +39,16 @@ export function ShopPageClient({
     );
   }, [searchParams, categories]);
 
+  // Same recipe as ?category= — resolves to null (not a filter) when the
+  // slug doesn't match any real event, same graceful fallback.
+  const eventFromUrl = useMemo(() => {
+    const raw = searchParams.get("event");
+    if (!raw) return null;
+    return events.find((e) => e.slug.toLowerCase() === raw.toLowerCase()) ?? null;
+  }, [searchParams, events]);
+
   const [selectedCategory, setSelectedCategory] = useState<string>(categoryFromUrl);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(eventFromUrl);
   const [selectedPrice, setSelectedPrice] = useState<string>("All");
   const [selectedSort, setSelectedSort] = useState<string>("Featured");
   const [showMobileFilters, setShowMobileFilters] = useState<boolean>(false);
@@ -48,12 +59,23 @@ export function ShopPageClient({
     setSelectedCategory(categoryFromUrl);
   }, [categoryFromUrl]);
 
+  useEffect(() => {
+    setSelectedEvent(eventFromUrl);
+  }, [eventFromUrl]);
+
   const filteredProducts = useMemo(() => {
     let result = [...allProducts];
 
     // Category Filter
     if (selectedCategory !== "All") {
       result = result.filter((p) => p.categoryName === selectedCategory);
+    }
+
+    // Event filter — a product's id must be in the event's own productIds,
+    // not a name/slug match like category (a product has no eventSlug of
+    // its own).
+    if (selectedEvent) {
+      result = result.filter((p) => selectedEvent.productIds.includes(p.id));
     }
 
     // Price Filter
@@ -68,18 +90,24 @@ export function ShopPageClient({
     if (selectedSort === "Highest Rated") result.sort((a, b) => b.rating - a.rating);
 
     return result;
-  }, [allProducts, selectedCategory, selectedPrice, selectedSort]);
+  }, [allProducts, selectedCategory, selectedEvent, selectedPrice, selectedSort]);
 
-  const displayTitle = selectedCategory === "All" ? "The Collection." : `${selectedCategory}.`;
+  const displayTitle = selectedEvent
+    ? `${selectedEvent.name}.`
+    : selectedCategory === "All"
+      ? "The Collection."
+      : `${selectedCategory}.`;
 
   // Real per-category banner, set by the merchant in the dashboard (Category
   // → banner image). "All" isn't a real category, so there's no banner field
   // for it to have — rather than showing nothing, it borrows the first real
   // banner any category actually has set. A category with none of its own
-  // still gets the plain dark background below, not a fake stock photo.
+  // still gets the plain dark background below, not a fake stock photo. An
+  // active event's own image takes precedence over both.
   const firstAvailableBanner = allCategories.find((c) => c.banner)?.banner || "";
-  const currentBanner =
-    selectedCategory === "All"
+  const currentBanner = selectedEvent?.image
+    ? selectedEvent.image
+    : selectedCategory === "All"
       ? firstAvailableBanner
       : allCategories.find((c) => c.name === selectedCategory)?.banner || "";
 

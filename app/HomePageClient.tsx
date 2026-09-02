@@ -3,14 +3,15 @@
 import React from "react";
 import { useTheme } from "@/lib/theme-context";
 import { SectionRenderer } from "@/sections/SectionRenderer";
-import type { Product, ProductCategory } from "@/lib/theme-types";
+import type { Event, Product, ProductCategory } from "@/lib/theme-types";
 
 type HomePageClientProps = {
   categories: ProductCategory[];
   products: Product[];
+  events: Event[];
 };
 
-export function HomePageClient({ categories, products }: HomePageClientProps) {
+export function HomePageClient({ categories, products, events }: HomePageClientProps) {
   const { settings } = useTheme();
 
   return (
@@ -22,6 +23,7 @@ export function HomePageClient({ categories, products }: HomePageClientProps) {
           settings={settings}
           categories={categories}
           products={products}
+          events={events}
         />
       ))}
     </div>

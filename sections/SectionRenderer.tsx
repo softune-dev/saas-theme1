@@ -1,9 +1,10 @@
 "use client";
 
 import React from "react";
-import { Product, ProductCategory, SectionType, SiteEditorSettings } from "@/lib/theme-types";
+import { Event, Product, ProductCategory, SectionType, SiteEditorSettings } from "@/lib/theme-types";
 import { BannerSection } from "./BannerSection";
 import { HeroSection } from "./HeroSection";
+import { EventsSection } from "./EventsSection";
 import { CategoriesSection } from "./CategoriesSection";
 import { FeatureProductsSection } from "./FeatureProductsSection";
 import { ProductShowcaseSection } from "./ProductShowcaseSection";
@@ -23,6 +24,7 @@ interface SectionRendererProps {
    * these; every other section ignores them. */
   categories: ProductCategory[];
   products: Product[];
+  events: Event[];
 }
 
 export function SectionRenderer({
@@ -30,6 +32,7 @@ export function SectionRenderer({
   settings,
   categories,
   products,
+  events,
 }: SectionRendererProps) {
   switch (type) {
     case "banner":
@@ -45,6 +48,14 @@ export function SectionRenderer({
         <HeroSection
           heroImages={settings.heroImages}
           heroImagesSquare={settings.heroImagesSquare}
+        />
+      );
+
+    case "events":
+      return (
+        <EventsSection
+          selectedEventIds={settings.selectedEventIds ?? []}
+          events={events}
         />
       );
 

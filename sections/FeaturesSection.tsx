@@ -91,37 +91,8 @@ export function FeaturesSection(props: FeaturesSectionProps) {
   ];
 
   const filtered = raw.filter((item) => item.title || item.description);
-  const commitments: Array<{
-    iconName?: string;
-    image?: string;
-    title: string;
-    description: string;
-  }> =
-    filtered.length > 0
-      ? filtered
-      : [
-          {
-            iconName: "truck",
-            image: undefined,
-            title: "Fast Delivery",
-            description:
-              "Reliable and tracked nationwide delivery to your doorstep.",
-          },
-          {
-            iconName: "shield-check",
-            image: undefined,
-            title: "Secure Checkout",
-            description:
-              "Cash on delivery, bKash, and seamless payment options.",
-          },
-          {
-            iconName: "refresh-cw",
-            image: undefined,
-            title: "Easy Returns",
-            description:
-              "Hassle-free exchange policy on all eligible purchases.",
-          },
-        ];
+  const isSkeleton = filtered.length === 0;
+  const commitments = filtered;
 
   const title = (featuresTitle ?? "").trim();
 
@@ -139,52 +110,64 @@ export function FeaturesSection(props: FeaturesSectionProps) {
         <div
           className={[
             "grid grid-cols-1 divide-y hairline md:divide-y-0 md:divide-x",
-            commitments.length === 1
+            (isSkeleton ? 3 : commitments.length) === 1
               ? "md:grid-cols-1"
-              : commitments.length === 2
+              : (isSkeleton ? 3 : commitments.length) === 2
                 ? "md:grid-cols-2"
                 : "md:grid-cols-3",
           ].join(" ")}
         >
-          {commitments.map((item, i) => (
-            <motion.div
-              key={`${item.title}-${i}`}
-              initial={{ opacity: 0, y: 15 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-40px" }}
-              transition={{
-                duration: 0.7,
-                delay: i * 0.1,
-                ease: [0.22, 1, 0.36, 1],
-              }}
-              className="group flex flex-col items-center px-6 py-8 text-center transition-colors duration-300 hover:bg-stone-100/40 md:py-10"
-            >
-              {item.image ? (
-                <span className="relative mb-5 h-10 w-10 overflow-hidden rounded-full">
-                  <Image src={item.image} alt="" fill className="object-cover" />
-                </span>
-              ) : item.iconName ? (
-                <FeatureIcon
-                  name={item.iconName}
-                  strokeWidth={1.1}
-                  className="mb-5 h-7 w-7 text-stone-600 transition-colors group-hover:text-stone-900"
-                />
-              ) : null}
-              {item.title ? (
-                <h3
-                  style={{ fontFamily: '"Fraunces", Georgia, serif' }}
-                  className="font-display text-lg tracking-tight text-[var(--foreground)]"
+          {isSkeleton
+            ? [0, 1, 2].map((i) => (
+                <div
+                  key={i}
+                  className="flex flex-col items-center px-6 py-8 text-center md:py-10"
+                  aria-hidden
                 >
-                  {item.title}
-                </h3>
-              ) : null}
-              {item.description ? (
-                <p className="mt-2 max-w-xs text-[13px] leading-relaxed text-stone-500">
-                  {item.description}
-                </p>
-              ) : null}
-            </motion.div>
-          ))}
+                  <span className="mb-5 h-7 w-7 rounded-full bg-stone-300" />
+                  <div className="h-4 w-28 rounded bg-stone-300" />
+                  <div className="mt-2 h-3 w-40 max-w-xs rounded bg-stone-300/70" />
+                </div>
+              ))
+            : commitments.map((item, i) => (
+                <motion.div
+                  key={`${item.title}-${i}`}
+                  initial={{ opacity: 0, y: 15 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-40px" }}
+                  transition={{
+                    duration: 0.7,
+                    delay: i * 0.1,
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
+                  className="group flex flex-col items-center px-6 py-8 text-center transition-colors duration-300 hover:bg-stone-100/40 md:py-10"
+                >
+                  {item.image ? (
+                    <span className="relative mb-5 h-10 w-10 overflow-hidden rounded-full">
+                      <Image src={item.image} alt="" fill className="object-cover" />
+                    </span>
+                  ) : item.iconName ? (
+                    <FeatureIcon
+                      name={item.iconName}
+                      strokeWidth={1.1}
+                      className="mb-5 h-7 w-7 text-stone-600 transition-colors group-hover:text-stone-900"
+                    />
+                  ) : null}
+                  {item.title ? (
+                    <h3
+                      style={{ fontFamily: '"Fraunces", Georgia, serif' }}
+                      className="font-display text-lg tracking-tight text-[var(--foreground)]"
+                    >
+                      {item.title}
+                    </h3>
+                  ) : null}
+                  {item.description ? (
+                    <p className="mt-2 max-w-xs text-[13px] leading-relaxed text-stone-500">
+                      {item.description}
+                    </p>
+                  ) : null}
+                </motion.div>
+              ))}
         </div>
       </div>
     </section>

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { getSiteHost, getPageSeo, buildMetadata } from "@/lib/get-site";
-import { getSiteCategories, getSiteProducts } from "@/lib/public-catalog";
+import { getSiteCategories, getSiteEvents, getSiteProducts } from "@/lib/public-catalog";
 import { ShopPageClient } from "./ShopPageClient";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -12,10 +12,11 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function ShopPage() {
   const host = await getSiteHost();
-  const [categories, products] = await Promise.all([
+  const [categories, products, events] = await Promise.all([
     getSiteCategories(host),
     getSiteProducts(host),
+    getSiteEvents(host),
   ]);
 
-  return <ShopPageClient categories={categories} products={products} />;
+  return <ShopPageClient categories={categories} products={products} events={events} />;
 }

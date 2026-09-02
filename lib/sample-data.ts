@@ -51,6 +51,7 @@ export const defaultSettings: SiteEditorSettings = {
   announcementDivider: "✦",
   heroImages: [],
   heroImagesSquare: [],
+  selectedEventIds: [],
   categoriesTitle: "The collections.",
   selectedCategoryIds: [],
   featureProductsTitle: "New arrivals.",

@@ -742,9 +742,16 @@ export function CheckoutPageClient({
 
               <div className="space-y-4 text-sm mb-8 border-y border-dashed border-[#1c1c1c]/20 py-6 text-left">
                 {order.items.map((i, idx) => (
-                  <div key={`${i.name}-${idx}`} className="flex justify-between gap-4">
-                    <span className="truncate text-stone-800">{i.quantity}x {i.name}</span>
-                    <span className="font-semibold text-stone-900">{formatTaka(i.total_cents / 100)}</span>
+                  <div key={`${i.name}-${idx}`} className="flex flex-col gap-0.5">
+                    <div className="flex justify-between gap-4">
+                      <span className="truncate text-stone-800">{i.quantity}x {i.name}</span>
+                      <span className="font-semibold text-stone-900">{formatTaka(i.total_cents / 100)}</span>
+                    </div>
+                    {i.event_name ? (
+                      <span className="text-[11px] uppercase tracking-wider text-[var(--brand)]">
+                        {i.event_name} — {i.event_discount_percent}% off
+                      </span>
+                    ) : null}
                   </div>
                 ))}
                 <div className="flex justify-between gap-4 text-[#1c1c1c]/60 pt-2">
