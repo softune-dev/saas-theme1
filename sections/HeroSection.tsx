@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
+import { Plus } from "lucide-react";
 
 interface HeroSectionProps {
   /** 16:9 images. Required set — desktop always uses these. */
@@ -69,8 +70,45 @@ export function HeroSection({ heroImages, heroImagesSquare }: HeroSectionProps) 
   const square = (heroImagesSquare ?? []).filter(Boolean);
   const mobile = square.length > 0 ? square : wide;
 
-  // No images configured yet — render nothing rather than a broken empty frame.
-  if (wide.length === 0) return null;
+  // When no hero images are configured, render stylized skeleton placeholders
+  // matching the category card aesthetic with + icon, labels, and aspect ratio info.
+  if (wide.length === 0) {
+    return (
+      <section className="relative bg-[var(--background)]">
+        {/* Mobile: 1:1 skeleton */}
+        <div className="relative aspect-square w-full bg-stone-200/90 border border-stone-300/80 flex flex-col items-center justify-center p-6 text-center select-none md:hidden">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-stone-300/80 text-stone-600 mb-3">
+            <Plus className="h-6 w-6" strokeWidth={1.75} />
+          </div>
+          <span
+            style={{ fontFamily: '"Fraunces", Georgia, serif' }}
+            className="font-display text-lg text-stone-600 sm:text-xl"
+          >
+            Add hero image mobile
+          </span>
+          <span className="mt-1 text-xs uppercase tracking-[0.2em] text-stone-400">
+            1:1
+          </span>
+        </div>
+
+        {/* Desktop: 16:9 skeleton */}
+        <div className="relative hidden aspect-[21/9] w-full bg-stone-200/90 border border-stone-300/80 md:flex flex-col items-center justify-center p-8 text-center select-none">
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-stone-300/80 text-stone-600 mb-3">
+            <Plus className="h-7 w-7" strokeWidth={1.75} />
+          </div>
+          <span
+            style={{ fontFamily: '"Fraunces", Georgia, serif' }}
+            className="font-display text-xl text-stone-600 md:text-2xl"
+          >
+            Add hero image desktop
+          </span>
+          <span className="mt-1.5 text-xs uppercase tracking-[0.24em] text-stone-400">
+            16:9
+          </span>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="relative bg-[var(--background)]">

@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { Plus } from "lucide-react";
 import useEmblaCarousel from "embla-carousel-react";
 import type { Product, ProductCategory } from "@/lib/theme-types";
 import { ProductCard } from "@/components/product/ProductCard";
@@ -72,6 +73,70 @@ function CategoryProductSlider({
   );
 }
 
+function SkeletonCategoryProductSlider({
+  categoryIndex,
+}: {
+  categoryIndex: number;
+}) {
+  const [emblaRef] = useEmblaCarousel({
+    align: "start",
+    containScroll: "trimSnaps",
+    dragFree: true,
+  });
+
+  return (
+    <div className="w-full select-none">
+      <div className="mb-6 flex items-end justify-between gap-3 md:mb-8 md:gap-4">
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-stone-200 text-stone-600">
+            <Plus className="h-4 w-4" strokeWidth={1.75} />
+          </div>
+          <h3
+            style={{ fontFamily: '"Fraunces", Georgia, serif' }}
+            className="min-w-0 font-display text-xl leading-tight tracking-tight text-stone-600 sm:text-2xl md:text-3xl"
+          >
+            Add category {categoryIndex}
+          </h3>
+        </div>
+        <span className="mb-0.5 shrink-0 text-[11px] uppercase tracking-[0.24em] text-stone-500 sm:text-[12px]">
+          Add products
+        </span>
+      </div>
+
+      <div
+        className="overflow-hidden -mx-6 px-6 md:-mx-10 md:px-10"
+        ref={emblaRef}
+      >
+        <div className="flex w-full cursor-grab gap-4 pb-2 active:cursor-grabbing md:gap-6">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div
+              key={i}
+              className="min-w-0 flex-[0_0_70%] sm:flex-[0_0_42%] md:flex-[0_0_30%] lg:flex-[0_0_22%]"
+            >
+              <div className="relative w-full aspect-[3/4] overflow-hidden bg-stone-200/90 border border-stone-300/80 flex flex-col items-center justify-center p-4 text-center">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-stone-300/80 text-stone-600 mb-2">
+                  <Plus className="h-4 w-4" strokeWidth={1.75} />
+                </div>
+                <span
+                  style={{ fontFamily: '"Fraunces", Georgia, serif' }}
+                  className="font-display text-xs sm:text-sm text-stone-600"
+                >
+                  Add product {i + 1}
+                </span>
+              </div>
+              <div className="mt-3 space-y-1.5 text-left w-full">
+                <div className="hidden sm:block h-2.5 w-16 bg-stone-200 rounded-xs" />
+                <div className="h-4 w-3/4 bg-stone-200 rounded-xs" />
+                <div className="h-3.5 w-14 bg-stone-200 rounded-xs" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function CategoryShowcaseSection({
   categoryShowcaseTitle,
   categoryShowcaseCategoryIds,
@@ -85,7 +150,7 @@ export function CategoryShowcaseSection({
       ? allCategories.filter((cat) => categoryShowcaseCategoryIds.includes(cat.id))
       : [];
 
-  if (categories.length === 0) return null;
+  const isSkeleton = categories.length === 0;
 
   return (
     <section className="w-full bg-transparent">
@@ -106,15 +171,22 @@ export function CategoryShowcaseSection({
         </motion.div>
 
         <div className="flex w-full flex-col gap-10 md:gap-12">
-          {categories.map((cat) => (
-            <CategoryProductSlider
-              key={cat.id}
-              categoryId={cat.id}
-              categoryName={cat.name}
-              categorySlug={cat.slug}
-              products={products}
-            />
-          ))}
+          {isSkeleton
+            ? Array.from({ length: 2 }).map((_, blockIdx) => (
+                <SkeletonCategoryProductSlider
+                  key={blockIdx}
+                  categoryIndex={blockIdx + 1}
+                />
+              ))
+            : categories.map((cat) => (
+                <CategoryProductSlider
+                  key={cat.id}
+                  categoryId={cat.id}
+                  categoryName={cat.name}
+                  categorySlug={cat.slug}
+                  products={products}
+                />
+              ))}
         </div>
       </div>
     </section>

@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Menu, Search, ShoppingBag } from "lucide-react";
+import { Menu, Search, ShoppingBag, User } from "lucide-react";
 import { useTheme } from "@/lib/theme-context";
 import { useCart } from "@/components/cart/CartContext";
 import type { ProductCategory } from "@/lib/theme-types";
@@ -65,6 +65,14 @@ export function Header({
             className="p-2 rounded-full hover:bg-stone-200/50 text-[var(--foreground)] transition-colors"
           >
             <Search strokeWidth={1.25} className="h-5 w-5" />
+          </Link>
+
+          <Link
+            href="/login"
+            aria-label="Account"
+            className="p-2 rounded-full hover:bg-stone-200/50 text-[var(--foreground)] transition-colors"
+          >
+            <User strokeWidth={1.25} className="h-5 w-5" />
           </Link>
 
           <button

@@ -118,8 +118,15 @@ export function MobileMenu({
               ) : null}
             </div>
 
-            {/* Bottom quiet info */}
-            <div className="shrink-0 border-t hairline p-6 text-xs uppercase tracking-widest text-stone-500">
+            {/* Bottom quiet info & account */}
+            <div className="shrink-0 border-t hairline p-6 flex items-center justify-between text-xs uppercase tracking-widest text-stone-500">
+              <Link
+                href="/login"
+                onClick={onClose}
+                className="font-medium text-[var(--foreground)] hover:opacity-75 transition-opacity link-underline"
+              >
+                Sign In
+              </Link>
               <span>Nationwide delivery.</span>
             </div>
           </motion.div>

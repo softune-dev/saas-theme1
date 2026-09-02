@@ -3,7 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { Award, CheckCircle2, HeartHandshake } from "lucide-react";
+import { Award, CheckCircle2, HeartHandshake, Plus } from "lucide-react";
 
 interface WhyChooseUsSectionProps {
   whyTitle: string;
@@ -18,10 +18,6 @@ interface WhyChooseUsSectionProps {
 
 const ICONS = [Award, CheckCircle2, HeartHandshake] as const;
 
-/**
- * No DEFAULTS fallback — empty merchant fields must not invent “Maison”
- * copy. Hide the whole section when nothing real is configured.
- */
 export function WhyChooseUsSection({
   whyTitle,
   whyImage,
@@ -41,7 +37,64 @@ export function WhyChooseUsSection({
   const title = (whyTitle ?? "").trim();
   const image = (whyImage ?? "").trim();
 
-  if (points.length === 0) return null;
+  // Note: Section visibility toggle would require an on/off mechanism in the editor schema, which currently manages sections via array inclusion/reordering.
+  if (points.length === 0) {
+    return (
+      <section className="w-full">
+        <div className="mx-auto w-full max-w-[1600px] px-6 py-10 md:px-10 md:py-14">
+          <div className="grid w-full grid-cols-1 items-start gap-8 md:grid-cols-12 md:gap-10 lg:gap-12 select-none">
+            <div className="order-1 w-full space-y-5 md:col-span-7 lg:col-span-7">
+              <h2
+                style={{ fontFamily: '"Fraunces", Georgia, serif' }}
+                className="font-display text-2xl leading-tight tracking-tight text-[var(--foreground)] sm:text-3xl md:text-4xl"
+              >
+                Why choose us
+              </h2>
+
+              <p className="text-sm text-stone-500">
+                Add your store&apos;s story, craft details, guarantees, or reasons customers can trust your brand.
+              </p>
+
+              <div className="w-full divide-y divide-stone-200/80 border-t border-stone-200/80">
+                {[
+                  { n: "01" },
+                  { n: "02" },
+                  { n: "03" },
+                ].map((pt) => (
+                  <div
+                    key={pt.n}
+                    className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-x-3 gap-y-1 py-4 sm:gap-x-4 sm:py-5"
+                  >
+                    <span className="mt-0.5 font-display text-xs text-stone-400 tabular-nums sm:text-sm">
+                      {pt.n}
+                    </span>
+                    <div className="min-w-0 space-y-2">
+                      <div className="h-4 w-36 bg-stone-200 rounded-xs" />
+                      <div className="h-3.5 w-full max-w-sm bg-stone-200/70 rounded-xs" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="order-2 w-full md:col-span-5 lg:col-span-5">
+              <div className="relative mx-auto aspect-[4/3] w-full max-w-md overflow-hidden bg-stone-200/90 border border-stone-300/80 flex flex-col items-center justify-center p-6 text-center select-none md:mx-0 md:max-w-none md:aspect-[5/4]">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-300/80 text-stone-600 mb-3">
+                  <Plus className="h-5 w-5" strokeWidth={1.75} />
+                </div>
+                <span
+                  style={{ fontFamily: '"Fraunces", Georgia, serif' }}
+                  className="font-display text-base sm:text-lg text-stone-600"
+                >
+                  Add why choose us image
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="w-full">

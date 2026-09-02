@@ -4,6 +4,7 @@ import React from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { FeatureIcon } from "@/lib/icon-map";
+import { useTheme } from "@/lib/theme-context";
 
 interface FeaturesSectionProps {
   featuresTitle?: string;
@@ -24,33 +25,33 @@ interface FeaturesSectionProps {
   feature3Image?: string;
 }
 
-type FeatureItem = {
-  iconName?: string;
-  image?: string;
-  title: string;
-  description: string;
-};
+export function FeaturesSection(props: FeaturesSectionProps) {
+  const { settings } = useTheme();
 
-/** No mock titles/bodies — empty slots are dropped; empty section is hidden. */
-export function FeaturesSection({
-  featuresTitle,
-  feature1Title,
-  feature1,
-  feature1IconKind,
-  feature1Icon,
-  feature1Image,
-  feature2Title,
-  feature2,
-  feature2IconKind,
-  feature2Icon,
-  feature2Image,
-  feature3Title,
-  feature3,
-  feature3IconKind,
-  feature3Icon,
-  feature3Image,
-}: FeaturesSectionProps) {
-  const raw: FeatureItem[] = [
+  // Props from SectionRenderer take precedence over raw theme settings
+  const featuresTitle = props.featuresTitle ?? settings.featuresTitle;
+  const feature1Title = props.feature1Title ?? settings.feature1Title;
+  const feature1 = props.feature1 ?? settings.feature1;
+  const feature1IconKind =
+    props.feature1IconKind ?? settings.feature1IconKind;
+  const feature1Icon = props.feature1Icon ?? settings.feature1Icon;
+  const feature1Image = props.feature1Image ?? settings.feature1Image;
+
+  const feature2Title = props.feature2Title ?? settings.feature2Title;
+  const feature2 = props.feature2 ?? settings.feature2;
+  const feature2IconKind =
+    props.feature2IconKind ?? settings.feature2IconKind;
+  const feature2Icon = props.feature2Icon ?? settings.feature2Icon;
+  const feature2Image = props.feature2Image ?? settings.feature2Image;
+
+  const feature3Title = props.feature3Title ?? settings.feature3Title;
+  const feature3 = props.feature3 ?? settings.feature3;
+  const feature3IconKind =
+    props.feature3IconKind ?? settings.feature3IconKind;
+  const feature3Icon = props.feature3Icon ?? settings.feature3Icon;
+  const feature3Image = props.feature3Image ?? settings.feature3Image;
+
+  const raw = [
     {
       iconName:
         feature1IconKind === "icon" && feature1Icon
@@ -89,8 +90,38 @@ export function FeaturesSection({
     },
   ];
 
-  const commitments = raw.filter((item) => item.title || item.description);
-  if (commitments.length === 0) return null;
+  const filtered = raw.filter((item) => item.title || item.description);
+  const commitments: Array<{
+    iconName?: string;
+    image?: string;
+    title: string;
+    description: string;
+  }> =
+    filtered.length > 0
+      ? filtered
+      : [
+          {
+            iconName: "truck",
+            image: undefined,
+            title: "Fast Delivery",
+            description:
+              "Reliable and tracked nationwide delivery to your doorstep.",
+          },
+          {
+            iconName: "shield-check",
+            image: undefined,
+            title: "Secure Checkout",
+            description:
+              "Cash on delivery, bKash, and seamless payment options.",
+          },
+          {
+            iconName: "refresh-cw",
+            image: undefined,
+            title: "Easy Returns",
+            description:
+              "Hassle-free exchange policy on all eligible purchases.",
+          },
+        ];
 
   const title = (featuresTitle ?? "").trim();
 
@@ -142,13 +173,13 @@ export function FeaturesSection({
               {item.title ? (
                 <h3
                   style={{ fontFamily: '"Fraunces", Georgia, serif' }}
-                  className="font-display mb-3 text-xl text-[var(--foreground)] md:text-2xl"
+                  className="font-display text-lg tracking-tight text-[var(--foreground)]"
                 >
                   {item.title}
                 </h3>
               ) : null}
               {item.description ? (
-                <p className="max-w-[280px] text-xs leading-relaxed text-stone-500 md:text-sm">
+                <p className="mt-2 max-w-xs text-[13px] leading-relaxed text-stone-500">
                   {item.description}
                 </p>
               ) : null}

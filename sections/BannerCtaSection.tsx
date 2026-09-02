@@ -9,7 +9,7 @@ interface BannerCtaSectionProps {
   ctaButton: string;
 }
 
-/** Hide entirely when the merchant hasn't written title or body — no Maison mock copy. */
+/** When merchant hasn't configured title or body, render editorial skeleton card. */
 export function BannerCtaSection({
   ctaTitle,
   ctaBody,
@@ -22,7 +22,24 @@ export function BannerCtaSection({
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
 
-  if (!title && !body) return null;
+  if (!title && !body) {
+    return (
+      <section className="bg-[var(--background)] py-10 md:py-14">
+        <div className="mx-auto max-w-[1600px] px-6 md:px-10">
+          <div className="relative border border-stone-200 bg-stone-50 p-6 sm:p-8 md:p-10 select-none">
+            <div className="relative z-10 mx-auto max-w-2xl space-y-5 text-center">
+              <div className="h-7 sm:h-8 w-64 sm:w-80 mx-auto bg-stone-200 rounded-xs" />
+              <div className="h-4 w-72 sm:w-96 max-w-full mx-auto bg-stone-200/80 rounded-xs" />
+              <div className="mx-auto flex max-w-md flex-col items-stretch justify-center gap-3 pt-2 sm:flex-row">
+                <div className="h-10 sm:h-11 w-full border border-stone-300 bg-transparent sm:flex-1" />
+                <div className="h-10 sm:h-11 w-full sm:w-32 rounded-[var(--theme-btn-radius)] bg-stone-200" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
