@@ -24,7 +24,7 @@ function EventCard({ event, index }: { event: Event; index: number }) {
     >
       <Link
         href={`/shop?event=${encodeURIComponent(event.slug)}`}
-        className="group relative flex aspect-[16/9] w-full flex-col justify-end overflow-hidden rounded-2xl border border-stone-300/60 bg-stone-200"
+        className="group relative flex aspect-[16/9] w-full flex-col justify-end overflow-hidden border border-stone-300/60 bg-stone-200"
       >
         {event.image ? (
           <Image
@@ -61,7 +61,7 @@ function EventCard({ event, index }: { event: Event; index: number }) {
 
 function SkeletonEventCard({ eventIndex }: { eventIndex: number }) {
   return (
-    <div className="relative flex aspect-[16/9] w-full flex-col items-start justify-end gap-2 rounded-2xl border border-stone-300/80 bg-stone-200/90 p-4 text-left select-none sm:p-5">
+    <div className="relative flex aspect-[16/9] w-full flex-col items-start justify-end gap-2 border border-stone-300/80 bg-stone-200/90 p-4 text-left select-none sm:p-5">
       <div className="mb-1 flex h-7 w-7 items-center justify-center rounded-full bg-stone-300/80 text-stone-600">
         <Plus className="h-3.5 w-3.5" strokeWidth={1.75} />
       </div>
