@@ -3,7 +3,6 @@
 import React, { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { SiteLogo } from "@/components/brand/SiteLogo";
 import { Footer } from "@/components/footer/Footer";
 
 export function LoginPageClient() {
@@ -19,10 +18,7 @@ export function LoginPageClient() {
     <div className="flex min-h-screen flex-col bg-[var(--background)] text-[var(--foreground)]">
       <main className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col justify-center px-6 py-12 md:px-10 md:py-20">
         <div className="mx-auto w-full max-w-md">
-          <div className="mb-8 flex flex-col items-center text-center">
-            <Link href="/" className="mb-4 inline-flex items-center justify-center">
-              <SiteLogo size="lg" />
-            </Link>
+          <div className="mb-8 text-center">
             <p className="text-[11px] font-medium uppercase tracking-[0.24em] text-stone-500">
               Account
             </p>
