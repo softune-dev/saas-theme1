@@ -1,6 +1,6 @@
 import { headers } from "next/headers";
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { PublicSiteConfig, ResolvedPageSeo, Product } from "./theme-types";
 
 const API_BASE_URL =
@@ -69,9 +69,20 @@ export async function fetchSiteConfig(
 ): Promise<PublicSiteConfig | null> {
   const host = providedHost || (await getSiteHost());
 
+  // The real visitor IP (set by middleware.ts from the INBOUND request,
+  // before it's threaded here) — forwarded explicitly as X-Forwarded-For
+  // on this OUTBOUND call, since this fetch() is a brand-new connection
+  // from this app's own server and carries none of the original request's
+  // networking context otherwise. Without this, app/main.py's ip_block
+  // middleware never sees a blocked visitor's real IP for any
+  // server-rendered page — only client-side calls (checkout) would
+  // actually be blocked.
+  const clientIp = (await headers()).get("x-real-client-ip");
+
   let res: Response;
   try {
     res = await fetch(`${API_BASE_URL}/public/site/${host}`, {
+      headers: clientIp ? { "X-Forwarded-For": clientIp } : undefined,
       // In development this MUST NOT cache. The dashboard's editor preview
       // reloads this page expecting to see what was just published; a 60s
       // window (or worse, a cached copy of a site that has since been
@@ -85,6 +96,16 @@ export async function fetchSiteConfig(
   } catch {
     // Network error / API unreachable — nothing real to render.
     return null;
+  }
+
+  if (res.status === 403) {
+    const body = await res.json().catch(() => null);
+    if (body?.detail?.code === "ip_blocked") {
+      // redirect() works from anywhere — including the root layout, unlike
+      // notFound() (see this file's own comment above on that restriction)
+      // — so this one check covers every page and the layout in one place.
+      redirect("/blocked");
+    }
   }
 
   if (!res.ok) return null;
