@@ -5,9 +5,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { CreditCard, ChevronRight, Check, Copy } from "lucide-react";
+import { CreditCard, ChevronRight } from "lucide-react";
 import { useCart } from "@/components/cart/CartContext";
 import { formatTaka } from "@/lib/utils";
+import { ManualPaymentModal, type ManualWallet } from "@/components/checkout/ManualPaymentModal";
+import { NagadPaymentModal } from "@/components/checkout/NagadPaymentModal";
 import { captureAbandonedCheckout, submitOrder, type PublicOrderOut } from "@/lib/checkout";
 import { RecaptchaChallengeRequiredError, hasV2Fallback } from "@/lib/recaptcha";
 import { trackInitiateCheckout, trackPurchase } from "@/lib/tracking";
@@ -65,13 +67,16 @@ export function CheckoutPageClient({
   const checkoutReadyMethods = paymentMethods.filter(
     (m) => m.provider === "cod" || m.provider === "manual",
   );
+  const manualMethod = checkoutReadyMethods.find((m) => m.provider === "manual");
+  const manualWallets: ManualWallet[] = manualMethod?.config.wallets?.length
+    ? manualMethod.config.wallets
+    : ["bkash"];
   const [paymentMethod, setPaymentMethod] = useState<string | null>(
     checkoutReadyMethods[0]?.provider ?? null,
   );
-  const [transactionId, setTransactionId] = useState("");
-  const [txnIdError, setTxnIdError] = useState<string | null>(null);
   const [phoneError, setPhoneError] = useState<string | null>(null);
-  const [paymentNumberCopied, setPaymentNumberCopied] = useState(false);
+  const [manualModalOpen, setManualModalOpen] = useState(false);
+  const [activeManualWallet, setActiveManualWallet] = useState<ManualWallet | null>(null);
   const {
     items,
     subtotal,
@@ -139,21 +144,9 @@ export function CheckoutPageClient({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-fire on phone/cart changes, not host identity
   }, [formData.phone, items]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (items.length === 0 || placing || !paymentMethod) return;
-    if (!isValidBdLocalPhone(formData.phone)) {
-      setPhoneError("Enter a valid Bangladeshi mobile number, e.g. 17XXXXXXXX.");
-      return;
-    }
-    if (paymentMethod === "manual" && !transactionId.trim()) {
-      setTxnIdError("Transaction ID is required for manual payment.");
-      return;
-    }
+  async function placeOrder(transactionIdValue?: string) {
     setPlacing(true);
     setError(null);
-    setPhoneError(null);
-    setTxnIdError(null);
     try {
       const placed = await submitOrder(host, {
         items: items.map((i) => ({ product_id: i.product.id, quantity: i.quantity })),
@@ -166,9 +159,8 @@ export function CheckoutPageClient({
           zip: formData.zip,
         },
         delivery_location: selectedDeliveryLocation,
-        payment_method: paymentMethod,
-        transaction_id:
-          paymentMethod === "manual" ? transactionId.trim() : undefined,
+        payment_method: paymentMethod as string,
+        transaction_id: transactionIdValue,
       }, v2Token ?? "");
       setOrder(placed);
       // PublicOrderItemOut never carries product_id (deliberately minimal —
@@ -189,8 +181,35 @@ export function CheckoutPageClient({
         setError(err instanceof Error ? err.message : "Couldn't place your order. Please try again.");
         v2Ref.current?.reset();
       }
+      throw err;
     } finally {
       setPlacing(false);
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (items.length === 0 || placing || !paymentMethod) return;
+    if (!isValidBdLocalPhone(formData.phone)) {
+      setPhoneError("Enter a valid Bangladeshi mobile number, e.g. 17XXXXXXXX.");
+      return;
+    }
+    setPhoneError(null);
+
+    // Manual payment collects the sending number + transaction id inside
+    // its own branded modal (opened here, at final submit) instead of an
+    // inline form field — see ManualPaymentModal. The real order is only
+    // placed once that modal resolves with a transaction id.
+    if (paymentMethod === "manual") {
+      setActiveManualWallet(manualWallets.length === 1 ? manualWallets[0] : null);
+      setManualModalOpen(true);
+      return;
+    }
+
+    try {
+      await placeOrder();
+    } catch {
+      // Already surfaced via setError/setNeedsChallenge inside placeOrder.
     }
   };
 
@@ -413,7 +432,6 @@ export function CheckoutPageClient({
                   <div className="space-y-3">
                     {checkoutReadyMethods.map((method) => {
                       const selected = paymentMethod === method.provider;
-                      const isManual = method.provider === "manual";
                       return (
                         <label
                           key={method.provider}
@@ -444,6 +462,10 @@ export function CheckoutPageClient({
                                   <p className="mt-0.5 text-xs text-stone-500">
                                     Pay when your order arrives
                                   </p>
+                                ) : method.provider === "manual" ? (
+                                  <p className="mt-0.5 text-xs text-stone-500">
+                                    You&apos;ll confirm payment on the next step
+                                  </p>
                                 ) : null}
                               </div>
                             </div>
@@ -452,10 +474,7 @@ export function CheckoutPageClient({
                               name="payment_method"
                               className="sr-only"
                               checked={selected}
-                              onChange={() => {
-                                setPaymentMethod(method.provider);
-                                setTxnIdError(null);
-                              }}
+                              onChange={() => setPaymentMethod(method.provider)}
                             />
                             {WALLET_LOGOS[method.provider] ? (
                               // eslint-disable-next-line @next/next/no-img-element
@@ -471,118 +490,6 @@ export function CheckoutPageClient({
                               />
                             )}
                           </div>
-
-                          {selected && isManual ? (
-                            <div
-                              className="mt-5 space-y-4 border border-stone-200 bg-stone-50 p-4"
-                              onClick={(e) => e.stopPropagation()}
-                              onKeyDown={(e) => e.stopPropagation()}
-                            >
-                              {method.config.payment_number ? (
-                                <div>
-                                  <p className="text-xs font-medium text-stone-500">
-                                    Send payment to
-                                  </p>
-                                  <div className="mt-1 flex items-center gap-2">
-                                    <p className="text-lg font-semibold text-[var(--foreground)]">
-                                      {method.config.payment_number}
-                                    </p>
-                                    <button
-                                      type="button"
-                                      aria-label={
-                                        paymentNumberCopied
-                                          ? "Copied"
-                                          : "Copy payment number"
-                                      }
-                                      onClick={async (e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        const number =
-                                          method.config.payment_number;
-                                        if (!number) return;
-                                        try {
-                                          await navigator.clipboard.writeText(
-                                            number,
-                                          );
-                                          setPaymentNumberCopied(true);
-                                          window.setTimeout(
-                                            () => setPaymentNumberCopied(false),
-                                            1500,
-                                          );
-                                        } catch {
-                                          /* clipboard may be blocked; number stays visible to copy manually */
-                                        }
-                                      }}
-                                      className="inline-flex size-8 shrink-0 items-center justify-center border border-stone-200 bg-[var(--background)] text-stone-500 transition-colors hover:border-stone-300 hover:text-[var(--foreground)]"
-                                    >
-                                      {paymentNumberCopied ? (
-                                        <Check
-                                          strokeWidth={1.75}
-                                          className="size-3.5 text-emerald-600"
-                                        />
-                                      ) : (
-                                        <Copy
-                                          strokeWidth={1.75}
-                                          className="size-3.5"
-                                        />
-                                      )}
-                                    </button>
-                                  </div>
-                                  {method.config.wallets?.length ? (
-                                    <div className="mt-3 flex flex-wrap items-center gap-2">
-                                      {method.config.wallets.map((w) => {
-                                        const key = w.toLowerCase();
-                                        const logo = WALLET_LOGOS[key];
-                                        return logo ? (
-                                          <span
-                                            key={w}
-                                            className="inline-flex items-center bg-[var(--background)] px-2.5 py-1.5 ring-1 ring-stone-200"
-                                          >
-                                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                                            <img
-                                              src={logo}
-                                              alt={w}
-                                              className="h-6 w-auto object-contain"
-                                            />
-                                          </span>
-                                        ) : (
-                                          <span
-                                            key={w}
-                                            className="bg-[var(--background)] px-2.5 py-1 text-[11px] font-semibold capitalize text-[var(--foreground)] ring-1 ring-stone-200"
-                                          >
-                                            {w}
-                                          </span>
-                                        );
-                                      })}
-                                    </div>
-                                  ) : null}
-                                </div>
-                              ) : null}
-                              <div>
-                                <label className="mb-1.5 block text-xs font-medium text-stone-500">
-                                  Transaction ID *
-                                </label>
-                                <input
-                                  type="text"
-                                  name="transaction_id"
-                                  autoComplete="off"
-                                  placeholder="e.g. TXN123456789"
-                                  value={transactionId}
-                                  required={paymentMethod === "manual"}
-                                  onChange={(e) => {
-                                    setTransactionId(e.target.value);
-                                    if (txnIdError) setTxnIdError(null);
-                                  }}
-                                  className="w-full border border-stone-300 bg-[var(--background)] px-3.5 py-3 text-base text-[var(--foreground)] outline-none transition-colors placeholder:text-stone-400 focus:border-[var(--brand)]"
-                                />
-                                {txnIdError ? (
-                                  <p className="mt-1.5 text-xs text-red-600">
-                                    {txnIdError}
-                                  </p>
-                                ) : null}
-                              </div>
-                            </div>
-                          ) : null}
                         </label>
                       );
                     })}
@@ -814,6 +721,63 @@ export function CheckoutPageClient({
         )}
       </AnimatePresence>
 
+      {manualModalOpen && manualWallets.length > 1 && !activeManualWallet ? (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/60 p-4">
+          <div className="w-full max-w-sm rounded-xl bg-white p-5 shadow-2xl">
+            <h3 className="mb-4 text-sm font-semibold text-slate-900">Choose payment method</h3>
+            <div className="space-y-2">
+              {manualWallets.map((w) => (
+                <button
+                  key={w}
+                  type="button"
+                  onClick={() => setActiveManualWallet(w)}
+                  className="flex w-full items-center gap-3 rounded-lg border border-slate-200 px-3 py-3 text-left transition-colors hover:border-slate-300 hover:bg-slate-50"
+                >
+                  {w === "bkash" || w === "nagad" ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={`/assets/${w}.webp`} alt="" className="h-6 w-auto object-contain" />
+                  ) : (
+                    <span className="text-sm font-bold capitalize text-slate-700">{w}</span>
+                  )}
+                  <span className="text-sm font-medium capitalize text-slate-700">Pay with {w}</span>
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => setManualModalOpen(false)}
+              className="mt-3 w-full text-center text-xs font-medium text-slate-400 hover:text-slate-600"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      <NagadPaymentModal
+        open={manualModalOpen && activeManualWallet === "nagad"}
+        paymentNumber={manualMethod?.config.payment_number ?? ""}
+        shopName={siteName}
+        totalCents={Math.round(total * 100)}
+        onClose={() => {
+          setManualModalOpen(false);
+          setActiveManualWallet(null);
+        }}
+        onConfirm={(transactionIdValue) => placeOrder(transactionIdValue)}
+      />
+
+      <ManualPaymentModal
+        open={manualModalOpen && (activeManualWallet === "bkash" || activeManualWallet === "rocket")}
+        wallet={activeManualWallet === "rocket" ? "rocket" : "bkash"}
+        paymentNumber={manualMethod?.config.payment_number ?? ""}
+        shopName={siteName}
+        totalCents={Math.round(total * 100)}
+        onClose={() => {
+          setManualModalOpen(false);
+          setActiveManualWallet(null);
+        }}
+        onConfirm={(transactionIdValue) => placeOrder(transactionIdValue)}
+      />
     </div>
   );
 }
