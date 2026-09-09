@@ -35,22 +35,26 @@ function EventCard({ event, index }: { event: Event; index: number }) {
             className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
           />
         ) : null}
-        {/* Gradient keeps left-aligned text legible over any photo. */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+        {/* Two gradients keep left-aligned text legible over any photo: one
+            fading in from the left toward the middle, one rising from the
+            bottom — together they cover the whole text block, not just a
+            bottom strip. */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/25 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
 
-        <div className="relative flex flex-col items-start gap-1.5 p-4 text-left sm:p-5">
+        <div className="relative flex flex-col items-start gap-2 p-4 text-left sm:p-6">
           <h3
             style={{ fontFamily: '"Fraunces", Georgia, serif' }}
-            className="font-display text-lg leading-tight tracking-tight text-white sm:text-xl"
+            className="font-display text-2xl leading-tight tracking-tight text-white sm:text-3xl md:text-4xl"
           >
             {event.name}
           </h3>
           {event.description ? (
-            <p className="max-w-xs text-xs leading-relaxed text-white/80 line-clamp-1 sm:line-clamp-2">
+            <p className="max-w-sm text-sm leading-relaxed text-white/85 line-clamp-2">
               {event.description}
             </p>
           ) : null}
-          <span className="mt-1.5 inline-flex items-center justify-center rounded-[var(--theme-btn-radius)] bg-[var(--brand)] px-4 py-2 text-xs font-semibold tracking-wider text-[var(--background)] uppercase transition-opacity group-hover:opacity-90">
+          <span className="mt-1.5 inline-flex items-center justify-center rounded-[var(--theme-btn-radius)] bg-[var(--brand)] px-6 py-3 text-sm font-semibold tracking-wider text-[var(--background)] uppercase transition-opacity group-hover:opacity-90">
             {event.ctaLabel || "Shop now"}
           </span>
         </div>
@@ -91,11 +95,17 @@ export function EventsSection({ selectedEventIds, events }: EventsSectionProps) 
       : [];
 
   const isSkeleton = selected.length === 0;
+  // 1 or 2 real events: each takes the full row instead of sharing it with
+  // an empty slot — only at 3 does the usual 3-column grid make sense.
+  const columnsClass =
+    selected.length === 1 || selected.length === 2
+      ? "grid-cols-1"
+      : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3";
 
   return (
     <section className="w-full bg-transparent">
       <div className="mx-auto w-full max-w-[1600px] px-6 py-8 md:px-10 md:py-10">
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className={`grid gap-6 ${columnsClass}`}>
           {isSkeleton
             ? Array.from({ length: MAX_EVENTS }).map((_, i) => (
                 <SkeletonEventCard key={i} eventIndex={i + 1} />

@@ -86,6 +86,7 @@ export function SectionRenderer({
         <CategoriesSection
           categoriesTitle={settings.categoriesTitle}
           selectedCategoryIds={settings.selectedCategoryIds}
+          excludedCategoryIds={settings.excludedCategoryIds}
           categories={categories}
         />
       );

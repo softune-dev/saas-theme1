@@ -11,12 +11,14 @@ import type { ProductCategory } from "@/lib/theme-types";
 interface CategoriesSectionProps {
   categoriesTitle: string;
   selectedCategoryIds: string[];
+  excludedCategoryIds?: string[];
   categories: ProductCategory[];
 }
 
 export function CategoriesSection({
   categoriesTitle,
   selectedCategoryIds,
+  excludedCategoryIds,
   categories: allCategories,
 }: CategoriesSectionProps) {
   const [emblaRef] = useEmblaCarousel({
@@ -25,12 +27,20 @@ export function CategoriesSection({
     dragFree: true,
   });
 
-  // The merchant must explicitly pick categories in the editor — no
-  // "nothing selected = show everything" fallback.
-  const categories =
-    selectedCategoryIds?.length > 0
-      ? allCategories.filter((cat) => selectedCategoryIds.includes(cat.id))
-      : [];
+  // Opt-out model: every real category shows by default, including ones
+  // added to the catalog after this section was last touched in the editor
+  // — only excludedCategoryIds hides one. selectedCategoryIds is the older
+  // opt-in list from before this existed; sites that never touched the new
+  // field still resolve against it here so an already-published curated
+  // list keeps rendering exactly as before.
+  let categories: ProductCategory[];
+  if (excludedCategoryIds) {
+    categories = allCategories.filter((cat) => !excludedCategoryIds.includes(cat.id));
+  } else if (selectedCategoryIds?.length > 0) {
+    categories = allCategories.filter((cat) => selectedCategoryIds.includes(cat.id));
+  } else {
+    categories = allCategories;
+  }
 
   const isSkeleton = categories.length === 0;
 
