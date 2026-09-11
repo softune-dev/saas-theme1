@@ -6,7 +6,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Minus, Plus, Play } from "lucide-react";
-import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { Product } from "@/lib/theme-types";
 import { formatTaka } from "@/lib/utils";
 import { toEmbedUrl } from "@/lib/video";
@@ -15,12 +14,13 @@ import { ProductReviews } from "@/components/product/ProductReviews";
 import { useCart } from "@/components/cart/CartContext";
 import { trackAddToCart, trackViewContent } from "@/lib/tracking";
 import { Footer } from "@/components/footer/Footer";
+import { FeatureIcon } from "@/lib/icon-map";
 
 const defaultSizes = ["XS", "S", "M", "L", "XL"];
 
 // Neutral fallback for a feature added before icon-picking existed (or left
 // unset) — never a guess derived from the title text.
-const DEFAULT_FEATURE_ICON: IconName = "star";
+const DEFAULT_FEATURE_ICON = "star";
 
 export function ProductDetailClient({
   initialProduct,
@@ -392,10 +392,10 @@ export function ProductDetailClient({
             <div className="space-y-6 text-left pt-6">
               <div className="grid gap-8 text-left md:grid-cols-3 md:gap-12">
                 {features.map((feature, i) => {
-                  const iconName = (feature.icon as IconName) || DEFAULT_FEATURE_ICON;
+                  const iconName = feature.icon || DEFAULT_FEATURE_ICON;
                   return (
                     <div key={i} className="space-y-3">
-                      <DynamicIcon
+                      <FeatureIcon
                         name={iconName}
                         strokeWidth={1.25}
                         className="h-6 w-6 text-[var(--foreground)]"
