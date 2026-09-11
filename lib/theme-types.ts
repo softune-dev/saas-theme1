@@ -185,12 +185,19 @@ export type Product = {
    * pair, so the storefront must show what was actually saved rather than
    * a hardcoded "Size" heading. */
   sizeLabel?: string;
+  /** Same values as `sizes`, but carrying each value's own image/price
+   * override when the merchant set one (dashboard's variant editor) — kept
+   * separate from `sizes` (a plain string list) since most call sites only
+   * ever need the label. image, when set, swaps the main product photo;
+   * priceDeltaCents, when set, is added to the base price. */
+  sizeDetails?: { value: string; image?: string; priceDeltaCents?: number }[];
   /** hex is a real merchant-picked color (dashboard color wheel) when
    * present; only falls back to a name-based guess for products saved
    * before that existed (see color-names.ts). image, when set, is the
    * merchant's own photo for this specific color — selecting it swaps the
-   * main product photo instead of just tinting a swatch. */
-  colors?: { name: string; hex: string; image?: string }[];
+   * main product photo instead of just tinting a swatch. priceDeltaCents,
+   * when set, is added to the base price. */
+  colors?: { name: string; hex: string; image?: string; priceDeltaCents?: number }[];
   colorLabel?: string;
   /** True = no delivery charge for this product, ever. False + empty
    * deliveryCharges = the merchant hasn't set delivery pricing yet — treat

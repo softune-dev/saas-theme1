@@ -50,12 +50,28 @@ export function ProductDetailClient({
   const [selectedColor, setSelectedColor] = useState<string | undefined>(
     product.colors?.[0]?.name
   );
-  // A color value with its own photo (dashboard variant image) overrides the
-  // main stage — set only on an explicit swatch click, cleared the moment a
-  // gallery thumbnail (or a color with no photo) is picked, so the merchant's
-  // own gallery order/browsing never gets silently overridden by default.
+  // A color/size value with its own photo (dashboard variant editor)
+  // overrides the main stage — set only on an explicit selection, cleared
+  // the moment a gallery thumbnail (or a value with no photo) is picked, so
+  // the merchant's own gallery order/browsing never gets silently
+  // overridden by default.
   const [colorImage, setColorImage] = useState<string | null>(null);
+  const [sizeImage, setSizeImage] = useState<string | null>(null);
   const [quantity, setQuantity] = useState<number>(1);
+
+  // Size/color values can each carry their own price override (dashboard's
+  // "affects price" variant toggle) — both are added on top of the base
+  // price, same as the real order total the backend computes.
+  const selectedSizeDetail = product.sizeDetails?.find(
+    (d) => d.value === selectedSize,
+  );
+  const selectedColorDetail = product.colors?.find(
+    (c) => c.name === selectedColor,
+  );
+  const variantDeltaCents =
+    (selectedSizeDetail?.priceDeltaCents ?? 0) +
+    (selectedColorDetail?.priceDeltaCents ?? 0);
+  const displayPrice = product.price + variantDeltaCents / 100;
 
   const handleBuyNow = () => {
     addItem(product, quantity, selectedSize, selectedColor);
@@ -133,9 +149,9 @@ export function ProductDetailClient({
                   className="absolute inset-0 h-full w-full object-cover object-center"
                 />
               )
-            ) : colorImage || product.images[activeImage] || product.images[0] ? (
+            ) : colorImage || sizeImage || product.images[activeImage] || product.images[0] ? (
               <Image
-                src={colorImage || product.images[activeImage] || product.images[0]}
+                src={colorImage || sizeImage || product.images[activeImage] || product.images[0]}
                 alt={product.name}
                 fill
                 priority
@@ -156,6 +172,7 @@ export function ProductDetailClient({
                     setActiveImage(idx);
                     setShowVideo(false);
                     setColorImage(null);
+                    setSizeImage(null);
                   }}
                   className={`relative w-20 h-28 bg-stone-100 overflow-hidden border shrink-0 transition-opacity ${!showVideo && activeImage === idx
                       ? "border-[var(--brand)] opacity-100"
@@ -211,7 +228,7 @@ export function ProductDetailClient({
               {product.name}
             </h1>
             <div className="mt-4 flex items-baseline gap-3 text-2xl font-medium text-[var(--foreground)] sm:text-3xl">
-              <span>{formatTaka(product.price)}</span>
+              <span>{formatTaka(displayPrice)}</span>
               {product.originalPrice && (
                 <span className="text-base text-stone-400 line-through sm:text-lg">
                   {formatTaka(product.originalPrice)}
@@ -277,7 +294,11 @@ export function ProductDetailClient({
               {availableSizes.map((s) => (
                 <button
                   key={s}
-                  onClick={() => setSelectedSize(s)}
+                  onClick={() => {
+                    setSelectedSize(s);
+                    const detail = product.sizeDetails?.find((d) => d.value === s);
+                    setSizeImage(detail?.image || null);
+                  }}
                   className={`py-3.5 text-xs uppercase tracking-wider font-semibold border transition-colors cursor-pointer ${selectedSize === s
                       ? "border-[var(--brand)] bg-[var(--brand)] text-[var(--background)]"
                       : "hairline hover:border-[var(--brand)] bg-transparent text-stone-850"

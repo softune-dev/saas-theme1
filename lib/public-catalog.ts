@@ -122,7 +122,11 @@ function stripHtml(html: string, maxLength = 160): string {
  * suddenly render every swatch grey. */
 function adaptProduct(p: PublicProduct): Product {
   const variants = p.attributes?.variants as
-    | { type: string; isColor?: boolean; values: { value: string; hex?: string; image?: string }[] }[]
+    | {
+        type: string;
+        isColor?: boolean;
+        values: { value: string; hex?: string; image?: string; priceDeltaCents?: number }[];
+      }[]
     | undefined;
   const sizeVariant = variants?.find((v) => v.type.trim().toLowerCase() === "size");
   const colorVariant =
@@ -130,10 +134,16 @@ function adaptProduct(p: PublicProduct): Product {
     variants?.find((v) => v.type.trim().toLowerCase() === "color");
   const sizes = sizeVariant?.values.map((v) => v.value) ?? [];
   const sizeLabel = sizeVariant?.type;
+  const sizeDetails = sizeVariant?.values.map((v) => ({
+    value: v.value,
+    image: v.image,
+    priceDeltaCents: v.priceDeltaCents,
+  }));
   const colors = colorVariant?.values.map((v) => ({
     name: v.value,
     hex: v.hex || colorNameToHex(v.value),
     image: v.image,
+    priceDeltaCents: v.priceDeltaCents,
   }));
   const colorLabel = colorVariant?.type;
   const discountPercent =
@@ -172,6 +182,7 @@ function adaptProduct(p: PublicProduct): Product {
     deliveryCharges: p.deliveryCharges ?? [],
     sizes,
     sizeLabel,
+    sizeDetails,
     colors,
     colorLabel,
   };
