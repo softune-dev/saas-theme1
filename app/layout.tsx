@@ -37,8 +37,9 @@ import { CartDrawer } from "@/components/cart/CartDrawer";
 import { PreviewRouteBeacon } from "@/components/dev/PreviewRouteBeacon";
 import { PageViewBeacon } from "@/components/analytics/PageViewBeacon";
 import { getSiteHost, fetchSiteConfig, getPageSeo } from "@/lib/get-site";
-import { getSiteCategories } from "@/lib/public-catalog";
+import { getSiteCategories, getSiteEvents } from "@/lib/public-catalog";
 import { SiteUnavailable } from "@/components/ui/SiteUnavailable";
+import { EventPopupModal } from "@/components/product/EventPopupModal";
 import type { SiteEditorSettings } from "@/lib/theme-types";
 
 // Every font the editor's Brand panel can choose between, all loaded
@@ -356,6 +357,10 @@ export default async function RootLayout({
   // Mobile drawer lists categories beside nav — fetched once here, same
   // public catalog as the homepage sections (no sample-data fallback).
   const categories = await getSiteCategories(host);
+  const events = await getSiteEvents(host);
+  // At most one true per site (migrations/062) — independent of whichever
+  // events the homepage Events section curates for itself.
+  const popupEvent = events.find((e) => e.isPopup) ?? null;
 
   return (
     <html lang="en" className={fontVariables} suppressHydrationWarning>
@@ -445,6 +450,7 @@ export default async function RootLayout({
                 <Header categories={categories} />
                 <main className="flex-1">{children}</main>
                 <CartDrawer />
+                <EventPopupModal event={popupEvent} />
               </CartProvider>
             </ToastProvider>
           </BusinessProvider>
