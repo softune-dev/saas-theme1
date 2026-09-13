@@ -313,7 +313,7 @@ export function ProductDetailClient({
           {/* Action Buttons: Add to Bag, Buy Now, Buy on WhatsApp */}
           <div className="space-y-3 pt-2">
             <div className="flex items-center gap-4">
-              <div className="inline-flex items-center rounded-[var(--theme-btn-radius)] border hairline bg-transparent overflow-hidden">
+              <div className="inline-flex items-center rounded-[var(--theme-btn-radius)] border hairline bg-white overflow-hidden">
                 <button
                   onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                   className="p-4 text-[var(--foreground)] hover:bg-stone-200/50 transition-colors"
@@ -335,7 +335,7 @@ export function ProductDetailClient({
 
               <button
                 onClick={handleAddToCart}
-                className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-[var(--theme-btn-radius)] border border-stone-800 py-4 text-sm font-semibold text-[var(--foreground)] transition-all hover:bg-[var(--brand)] hover:text-[var(--background)]"
+                className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-[var(--theme-btn-radius)] border border-stone-800 bg-white py-4 text-sm font-semibold text-[var(--foreground)] transition-all hover:bg-[var(--brand)] hover:text-[var(--background)]"
               >
                 <img src="/assets/bag.svg" alt="Bag Icon" className="w-4 h-4" />
                 Add to bag
@@ -352,7 +352,7 @@ export function ProductDetailClient({
 
               <button
                 onClick={handleWhatsAppBuy}
-                className="flex cursor-pointer items-center justify-center gap-2 rounded-[var(--theme-btn-radius)] border border-stone-300 bg-transparent py-4 text-sm font-semibold text-[var(--foreground)] transition-colors hover:border-[var(--brand)]"
+                className="flex cursor-pointer items-center justify-center gap-2 rounded-[var(--theme-btn-radius)] border border-stone-300 bg-white py-4 text-sm font-semibold text-[var(--foreground)] transition-colors hover:border-[var(--brand)]"
               >
                 <img src="/assets/whatsapp.svg" alt="WhatsApp Icon" className="w-4.5 h-4.5" />
                 Order via WhatsApp
