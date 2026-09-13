@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import Link from "next/link";
 import { X, Star, ShoppingBag, Check, ShieldCheck, Truck } from "lucide-react";
@@ -32,8 +33,22 @@ export function QuickViewModal({
     product?.colors?.[0]?.name
   );
   const [quantity, setQuantity] = useState<number>(1);
+  const [mounted, setMounted] = useState(false);
 
-  if (!isOpen || !product) return null;
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [isOpen]);
+
+  if (!isOpen || !product || !mounted) return null;
 
   const handleAddToCart = () => {
     addItem(product, quantity, selectedSize, selectedColor);
@@ -51,8 +66,11 @@ export function QuickViewModal({
       )
     : 0;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-950/70 backdrop-blur-xs animate-fade-in">
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[200] flex items-center justify-center bg-stone-950/70 p-4 backdrop-blur-xs animate-fade-in"
+      onClick={onClose}
+    >
       <div
         className="relative w-full max-w-3xl bg-white border border-stone-300 shadow-2xl my-8 max-h-[90vh] flex flex-col md:flex-row"
         onClick={(e) => e.stopPropagation()}
@@ -263,6 +281,7 @@ export function QuickViewModal({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
