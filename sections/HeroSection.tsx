@@ -5,10 +5,14 @@ import Image from "next/image";
 import { Plus } from "lucide-react";
 
 interface HeroSectionProps {
+  heroMediaType?: "image" | "video";
   /** 16:9 images. Required set — desktop always uses these. */
   heroImages: string[];
   /** 1:1 images. Optional, mobile only; empty means mobile reuses heroImages. */
   heroImagesSquare: string[];
+  /** One clip for both desktop and mobile — only used when heroMediaType
+   * is "video". */
+  heroVideo?: string;
 }
 
 const SLIDE_MS = 3000;
@@ -63,7 +67,47 @@ function HeroSlides({
   );
 }
 
-export function HeroSection({ heroImages, heroImagesSquare }: HeroSectionProps) {
+export function HeroSection({
+  heroMediaType,
+  heroImages,
+  heroImagesSquare,
+  heroVideo,
+}: HeroSectionProps) {
+  if (heroMediaType === "video") {
+    if (!heroVideo) {
+      return (
+        <section className="relative bg-[var(--background)]">
+          <div className="relative flex aspect-[21/9] w-full flex-col items-center justify-center border border-stone-300/80 bg-stone-200/90 p-8 text-center select-none max-md:aspect-square">
+            <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-stone-300/80 text-stone-600">
+              <Plus className="h-7 w-7" strokeWidth={1.75} />
+            </div>
+            <span
+              style={{ fontFamily: '"Fraunces", Georgia, serif' }}
+              className="font-display text-xl text-stone-600 md:text-2xl"
+            >
+              Add hero video
+            </span>
+          </div>
+        </section>
+      );
+    }
+    return (
+      <section className="relative bg-[var(--background)]">
+        <div className="relative aspect-[21/9] w-full overflow-hidden max-md:aspect-square">
+          {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+          <video
+            src={heroVideo}
+            className="absolute inset-0 size-full object-cover"
+            autoPlay
+            muted
+            loop
+            playsInline
+          />
+        </div>
+      </section>
+    );
+  }
+
   const wide = (heroImages ?? []).filter(Boolean);
   // Square set is a mobile-only override. Without it, mobile shows the same
   // 16:9 images rather than nothing.
