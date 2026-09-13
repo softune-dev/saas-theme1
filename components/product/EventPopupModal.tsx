@@ -67,7 +67,10 @@ export function EventPopupModal({ event }: { event: Event | null }) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.98, y: 8 }}
             transition={{ type: "spring", damping: 26, stiffness: 300 }}
-            className="relative z-10 grid w-full max-w-xl grid-cols-1 overflow-hidden border hairline bg-[var(--background)] shadow-2xl sm:grid-cols-2"
+            className={[
+              "relative z-10 grid w-full overflow-hidden border hairline bg-[var(--background)] shadow-2xl",
+              event.imageOnly ? "max-w-md grid-cols-1" : "max-w-xl grid-cols-1 sm:grid-cols-2",
+            ].join(" ")}
           >
             <button
               type="button"
@@ -78,42 +81,66 @@ export function EventPopupModal({ event }: { event: Event | null }) {
               <X className="size-4" strokeWidth={2} />
             </button>
 
-            <div className="relative aspect-[4/3] w-full bg-stone-100 sm:aspect-auto">
-              {event.image ? (
-                <Image
-                  src={event.image}
-                  alt=""
-                  fill
-                  sizes="(max-width: 640px) 100vw, 50vw"
-                  className="object-cover"
-                  priority
-                />
-              ) : null}
-            </div>
-
-            <div className="flex flex-col justify-center gap-3 p-6 text-center sm:p-8 sm:text-left">
-              {event.discountPercent > 0 ? (
-                <span className="inline-flex w-fit items-center justify-center self-center rounded-full bg-[var(--brand)]/10 px-3 py-1 text-xs font-bold tracking-wide text-[var(--brand)] uppercase sm:self-start">
-                  {event.discountPercent}% off
-                </span>
-              ) : null}
-              <h2
-                style={{ fontFamily: '"Fraunces", Georgia, serif' }}
-                className="font-display text-2xl leading-tight tracking-tight text-[var(--foreground)] sm:text-3xl"
-              >
-                {event.name}
-              </h2>
-              {event.description ? (
-                <p className="text-sm leading-relaxed text-stone-500">{event.description}</p>
-              ) : null}
+            {event.imageOnly ? (
+              // The image itself IS the event — text is already baked into
+              // the artwork, so the whole thing is just a clickable banner.
               <Link
                 href={`/shop?event=${encodeURIComponent(event.slug)}`}
                 onClick={close}
-                className="mt-2 inline-flex h-11 w-full items-center justify-center rounded-[var(--theme-btn-radius)] bg-[var(--brand)] px-6 text-sm font-semibold text-[var(--background)] transition-opacity hover:opacity-90 sm:w-fit"
+                aria-label={event.name}
+                className="relative aspect-square w-full bg-stone-100"
               >
-                {event.ctaLabel || "Shop now"}
+                {event.image ? (
+                  <Image
+                    src={event.image}
+                    alt={event.name}
+                    fill
+                    sizes="(max-width: 640px) 100vw, 448px"
+                    className="object-cover"
+                    priority
+                  />
+                ) : null}
               </Link>
-            </div>
+            ) : (
+              <>
+                <div className="relative aspect-[4/3] w-full bg-stone-100 sm:aspect-auto">
+                  {event.image ? (
+                    <Image
+                      src={event.image}
+                      alt=""
+                      fill
+                      sizes="(max-width: 640px) 100vw, 50vw"
+                      className="object-cover"
+                      priority
+                    />
+                  ) : null}
+                </div>
+
+                <div className="flex flex-col justify-center gap-3 p-6 text-center sm:p-8 sm:text-left">
+                  {event.discountPercent > 0 ? (
+                    <span className="inline-flex w-fit items-center justify-center self-center rounded-full bg-[var(--brand)]/10 px-3 py-1 text-xs font-bold tracking-wide text-[var(--brand)] uppercase sm:self-start">
+                      {event.discountPercent}% off
+                    </span>
+                  ) : null}
+                  <h2
+                    style={{ fontFamily: '"Fraunces", Georgia, serif' }}
+                    className="font-display text-2xl leading-tight tracking-tight text-[var(--foreground)] sm:text-3xl"
+                  >
+                    {event.name}
+                  </h2>
+                  {event.description ? (
+                    <p className="text-sm leading-relaxed text-stone-500">{event.description}</p>
+                  ) : null}
+                  <Link
+                    href={`/shop?event=${encodeURIComponent(event.slug)}`}
+                    onClick={close}
+                    className="mt-2 inline-flex h-11 w-full items-center justify-center rounded-[var(--theme-btn-radius)] bg-[var(--brand)] px-6 text-sm font-semibold text-[var(--background)] transition-opacity hover:opacity-90 sm:w-fit"
+                  >
+                    {event.ctaLabel || "Shop now"}
+                  </Link>
+                </div>
+              </>
+            )}
           </motion.div>
         </div>
       ) : null}

@@ -29,35 +29,39 @@ function EventCard({ event, index }: { event: Event; index: number }) {
         {event.image ? (
           <Image
             src={event.image}
-            alt=""
+            alt={event.imageOnly ? event.name : ""}
             fill
             sizes="(max-width: 768px) 100vw, 33vw"
             className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
           />
         ) : null}
-        {/* Two gradients keep left-aligned text legible over any photo: one
-            fading in from the left toward the middle, one rising from the
-            bottom — together they cover the whole text block, not just a
-            bottom strip. */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/25 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
+        {event.imageOnly ? null : (
+          <>
+            {/* Two gradients keep left-aligned text legible over any photo: one
+                fading in from the left toward the middle, one rising from the
+                bottom — together they cover the whole text block, not just a
+                bottom strip. */}
+            <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/25 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
 
-        <div className="relative flex flex-col items-start gap-2 p-4 text-left sm:p-6">
-          <h3
-            style={{ fontFamily: '"Fraunces", Georgia, serif' }}
-            className="font-display text-2xl leading-tight tracking-tight text-white sm:text-3xl md:text-4xl"
-          >
-            {event.name}
-          </h3>
-          {event.description ? (
-            <p className="max-w-sm text-sm leading-relaxed text-white/85 line-clamp-2">
-              {event.description}
-            </p>
-          ) : null}
-          <span className="mt-1.5 inline-flex items-center justify-center rounded-[var(--theme-btn-radius)] bg-[var(--brand)] px-6 py-3 text-sm font-semibold tracking-wider text-[var(--background)] uppercase transition-opacity group-hover:opacity-90">
-            {event.ctaLabel || "Shop now"}
-          </span>
-        </div>
+            <div className="relative flex flex-col items-start gap-2 p-4 text-left sm:p-6">
+              <h3
+                style={{ fontFamily: '"Fraunces", Georgia, serif' }}
+                className="font-display text-2xl leading-tight tracking-tight text-white sm:text-3xl md:text-4xl"
+              >
+                {event.name}
+              </h3>
+              {event.description ? (
+                <p className="max-w-sm text-sm leading-relaxed text-white/85 line-clamp-2">
+                  {event.description}
+                </p>
+              ) : null}
+              <span className="mt-1.5 inline-flex items-center justify-center rounded-[var(--theme-btn-radius)] bg-[var(--brand)] px-6 py-3 text-sm font-semibold tracking-wider text-[var(--background)] uppercase transition-opacity group-hover:opacity-90">
+                {event.ctaLabel || "Shop now"}
+              </span>
+            </div>
+          </>
+        )}
       </Link>
     </motion.div>
   );
