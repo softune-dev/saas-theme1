@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import Image from "next/image";
 import { motion } from "framer-motion";
 import { Award, CheckCircle2, HeartHandshake, Plus } from "lucide-react";
 
@@ -130,15 +129,12 @@ export function WhyChooseUsSection({
                 viewport={{ once: true, margin: "-40px" }}
                 transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
               >
-                {/* Shorter aspect so copy isn’t dwarfed; capped width on mobile */}
-                <div className="relative mx-auto aspect-[4/3] w-full max-w-md overflow-hidden bg-stone-100 md:mx-0 md:max-w-none md:aspect-[5/4]">
-                  <Image
-                    src={image}
-                    alt=""
-                    fill
-                    sizes="(max-width: 768px) 100vw, 40vw"
-                    className="object-cover"
-                  />
+                {/* No forced aspect ratio/crop — the image renders at its
+                    own natural proportions instead of being cropped to
+                    fit a box. Capped width on mobile only. */}
+                <div className="relative mx-auto w-full max-w-md overflow-hidden bg-stone-100 md:mx-0 md:max-w-none">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={image} alt="" className="block h-auto w-full" />
                 </div>
               </motion.div>
             ) : (
