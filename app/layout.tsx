@@ -14,6 +14,7 @@ import {
   Libre_Baskerville,
   Manrope,
   Newsreader,
+  Noto_Sans_Bengali,
   Nunito_Sans,
   Outfit,
   Playfair_Display,
@@ -83,6 +84,20 @@ const inter = Inter({
   weight: ["300", "400", "500", "600", "700"],
   variable: "--font-inter",
   display: "swap",
+});
+
+// Fallback-only: supplies Bangla glyphs no merchant-selectable font above
+// covers (they're all Latin-only), matching the dashboard's own Bangla
+// fallback approach and bazaar's real working setup (Google Sans, what the
+// dashboard uses, isn't available in this Next.js version's font catalog).
+// Per-glyph CSS font fallback means it never touches Latin text — see
+// globals.css.
+const notoSansBengali = Noto_Sans_Bengali({
+  subsets: ["bengali"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-bengali",
+  display: "swap",
+  preload: false,
 });
 
 const manrope = Manrope({
@@ -276,6 +291,7 @@ const fontVariables = [
   figtree.variable,
   dmSans.variable,
   nunitoSans.variable,
+  notoSansBengali.variable,
 ].join(" ");
 
 export async function generateMetadata(): Promise<Metadata> {
