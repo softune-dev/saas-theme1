@@ -16,8 +16,6 @@ import { trackAddToCart, trackViewContent } from "@/lib/tracking";
 import { Footer } from "@/components/footer/Footer";
 import { FeatureIcon } from "@/lib/icon-map";
 
-const defaultSizes = ["XS", "S", "M", "L", "XL"];
-
 // Neutral fallback for a feature added before icon-picking existed (or left
 // unset) — never a guess derived from the title text.
 const DEFAULT_FEATURE_ICON = "star";
@@ -44,8 +42,8 @@ export function ProductDetailClient({
 
   const [activeImage, setActiveImage] = useState<number>(0);
   const [showVideo, setShowVideo] = useState<boolean>(false);
-  const [selectedSize, setSelectedSize] = useState<string>(
-    product.sizes?.[0] || "M"
+  const [selectedSize, setSelectedSize] = useState<string | undefined>(
+    product.sizes?.[0]
   );
   const [selectedColor, setSelectedColor] = useState<string | undefined>(
     product.colors?.[0]?.name
@@ -84,13 +82,13 @@ export function ProductDetailClient({
     const phoneNumber = "8801700000000"; // Default phone number
     const url = typeof window !== "undefined" ? window.location.href : "";
     const colorLine = selectedColor ? `\nColor: ${selectedColor}` : "";
-    const message = `Hello, I'd like to order: *${product.name}*\nSize: ${selectedSize}${colorLine}\nQuantity: ${quantity}\nLink: ${url}`;
+    const sizeLine = selectedSize ? `\nSize: ${selectedSize}` : "";
+    const message = `Hello, I'd like to order: *${product.name}*${sizeLine}${colorLine}\nQuantity: ${quantity}\nLink: ${url}`;
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, "_blank");
   };
 
-  const availableSizes =
-    product.sizes && product.sizes.length > 0 ? product.sizes : defaultSizes;
+  const availableSizes = product.sizes ?? [];
 
   const related = relatedProducts.filter((p) => p.id !== product.id).slice(0, 3);
 
@@ -285,30 +283,37 @@ export function ProductDetailClient({
           {/* Size Selector — label is the merchant's own saved variant
            * type name (e.g. "Size"), not a hardcoded heading; the old
            * "Standard fit" subtitle was invented copy with nothing behind
-           * it, so it's gone rather than kept as a fake reassurance. */}
-          <div>
-            <div className="flex items-center text-[11px] uppercase tracking-[0.18em] font-medium text-stone-700">
-              <span>{product.sizeLabel || "Size"}</span>
+           * it, so it's gone rather than kept as a fake reassurance. Whole
+           * block only renders when the product actually has sizes —
+           * previously fell back to a fabricated XS/S/M/L/XL list that had
+           * nothing to do with the real product (e.g. a skincare serum's
+           * ml variants), letting a customer "select" a size that was
+           * never real. */}
+          {availableSizes.length > 0 ? (
+            <div>
+              <div className="flex items-center text-[11px] uppercase tracking-[0.18em] font-medium text-stone-700">
+                <span>{product.sizeLabel || "Size"}</span>
+              </div>
+              <div className="mt-3 grid grid-cols-5 gap-2">
+                {availableSizes.map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => {
+                      setSelectedSize(s);
+                      const detail = product.sizeDetails?.find((d) => d.value === s);
+                      setSizeImage(detail?.image || null);
+                    }}
+                    className={`py-3.5 text-xs uppercase tracking-wider font-semibold border transition-colors cursor-pointer ${selectedSize === s
+                        ? "border-[var(--brand)] bg-[var(--brand)] text-[var(--background)]"
+                        : "hairline hover:border-[var(--brand)] bg-transparent text-stone-850"
+                      }`}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="mt-3 grid grid-cols-5 gap-2">
-              {availableSizes.map((s) => (
-                <button
-                  key={s}
-                  onClick={() => {
-                    setSelectedSize(s);
-                    const detail = product.sizeDetails?.find((d) => d.value === s);
-                    setSizeImage(detail?.image || null);
-                  }}
-                  className={`py-3.5 text-xs uppercase tracking-wider font-semibold border transition-colors cursor-pointer ${selectedSize === s
-                      ? "border-[var(--brand)] bg-[var(--brand)] text-[var(--background)]"
-                      : "hairline hover:border-[var(--brand)] bg-transparent text-stone-850"
-                    }`}
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
-          </div>
+          ) : null}
 
           {/* Action Buttons: Add to Bag, Buy Now, Buy on WhatsApp */}
           <div className="space-y-3 pt-2">
