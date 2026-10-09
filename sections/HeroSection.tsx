@@ -113,6 +113,10 @@ export function HeroSection({
   // 16:9 images rather than nothing.
   const square = (heroImagesSquare ?? []).filter(Boolean);
   const mobile = square.length > 0 ? square : wide;
+  // No mobile (1:1) hero uploaded: small screens show the desktop image
+  // instead, at its own locked 16:9 shape, smaller. It is never cropped
+  // into a square. With a mobile image the frame stays 1:1.
+  const mobileAspect = square.length > 0 ? "aspect-square" : "aspect-video";
 
   // When no hero images are configured, render stylized skeleton placeholders
   // matching the category card aesthetic with + icon, labels, and aspect ratio info.
@@ -161,7 +165,7 @@ export function HeroSection({
        * a slide index. */}
       <HeroSlides
         images={mobile}
-        className="aspect-square md:hidden"
+        className={`${mobileAspect} md:hidden`}
         priority
       />
       <HeroSlides
