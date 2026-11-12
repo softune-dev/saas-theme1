@@ -2,12 +2,13 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Menu, Search, ShoppingBag, User } from "lucide-react";
+import { Menu, ShoppingBag, User } from "lucide-react";
 import { useTheme } from "@/lib/theme-context";
 import { useCart } from "@/components/cart/CartContext";
 import type { ProductCategory } from "@/lib/theme-types";
 import { SiteLogo } from "@/components/brand/SiteLogo";
 import { MobileMenu } from "./MobileMenu";
+import { HeaderSearch } from "./HeaderSearch";
 
 export function Header({
   categories = [],
@@ -59,13 +60,7 @@ export function Header({
 
         {/* Right: Actions */}
         <div className="flex items-center gap-2 md:gap-4 justify-end">
-          <Link
-            href="/shop"
-            aria-label="Search"
-            className="p-2 rounded-full hover:bg-stone-200/50 text-[var(--foreground)] transition-colors"
-          >
-            <Search strokeWidth={1.25} className="h-5 w-5" />
-          </Link>
+          <HeaderSearch />
 
           <Link
             href="/login"
