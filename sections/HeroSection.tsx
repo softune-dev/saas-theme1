@@ -77,7 +77,7 @@ export function HeroSection({
     if (!heroVideo) {
       return (
         <section className="relative bg-[var(--background)]">
-          <div className="relative flex aspect-[21/9] w-full flex-col items-center justify-center border border-stone-300/80 bg-stone-200/90 p-8 text-center select-none max-md:aspect-square">
+          <div className="relative flex aspect-video w-full flex-col items-center justify-center border border-stone-300/80 bg-stone-200/90 p-8 text-center select-none max-md:aspect-square">
             <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-stone-300/80 text-stone-600">
               <Plus className="h-7 w-7" strokeWidth={1.75} />
             </div>
@@ -93,7 +93,7 @@ export function HeroSection({
     }
     return (
       <section className="relative bg-[var(--background)]">
-        <div className="relative aspect-[21/9] w-full overflow-hidden max-md:aspect-square">
+        <div className="relative aspect-video w-full overflow-hidden max-md:aspect-square">
           {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
           <video
             src={heroVideo}
@@ -140,7 +140,7 @@ export function HeroSection({
         </div>
 
         {/* Desktop: 16:9 skeleton */}
-        <div className="relative hidden aspect-[21/9] w-full bg-stone-200/90 border border-stone-300/80 md:flex flex-col items-center justify-center p-8 text-center select-none">
+        <div className="relative hidden aspect-video w-full bg-stone-200/90 border border-stone-300/80 md:flex flex-col items-center justify-center p-8 text-center select-none">
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-stone-300/80 text-stone-600 mb-3">
             <Plus className="h-7 w-7" strokeWidth={1.75} />
           </div>
@@ -170,7 +170,7 @@ export function HeroSection({
       />
       <HeroSlides
         images={wide}
-        className="hidden aspect-[21/9] md:block"
+        className="hidden aspect-video md:block"
         priority
       />
     </section>
