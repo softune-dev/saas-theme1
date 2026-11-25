@@ -477,7 +477,7 @@ export default async function RootLayout({
           <PageViewBeacon host={host} />
         </Suspense>
         <ThemeProvider initialSettings={theme}>
-          <BusinessProvider business={config.site.business ?? {}}>
+          <BusinessProvider business={config.site.business ?? {}} badge={config.badge === true}>
             <ToastProvider>
               <CartProvider freeDeliveryThreshold={(config.site.free_delivery_over_cents ?? 0) / 100}>
                 <Header categories={categories} />
