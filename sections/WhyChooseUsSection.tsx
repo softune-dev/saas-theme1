@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { motion } from "framer-motion";
 import { Award, CheckCircle2, HeartHandshake, Plus } from "lucide-react";
 
 interface WhyChooseUsSectionProps {
@@ -60,16 +59,8 @@ export function WhyChooseUsSection({
                 {points.map((pt, idx) => {
                   const Icon = pt.Icon;
                   return (
-                    <motion.div
+                    <div
                       key={pt.n}
-                      initial={{ opacity: 0, y: 12 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true, margin: "-30px" }}
-                      transition={{
-                        duration: 0.5,
-                        delay: idx * 0.06,
-                        ease: [0.22, 1, 0.36, 1],
-                      }}
                       className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-x-3 gap-y-1 py-4 sm:gap-x-4 sm:py-5"
                     >
                       <Icon
@@ -95,7 +86,7 @@ export function WhyChooseUsSection({
                           </p>
                         ) : null}
                       </div>
-                    </motion.div>
+                    </div>
                   );
                 })}
               </div>
@@ -123,11 +114,7 @@ export function WhyChooseUsSection({
               independent of whether the points on the left are filled in yet. */}
           <div className="order-2 w-full md:col-span-5 lg:col-span-5">
             {image ? (
-              <motion.div
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-40px" }}
-                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+              <div
               >
                 {/* No forced aspect ratio/crop — the image renders at its
                     own natural proportions instead of being cropped to
@@ -136,7 +123,7 @@ export function WhyChooseUsSection({
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={image} alt="" className="block h-auto w-full" />
                 </div>
-              </motion.div>
+              </div>
             ) : (
               <div className="relative mx-auto aspect-[4/3] w-full max-w-md overflow-hidden bg-stone-200/90 border border-stone-300/80 flex flex-col items-center justify-center p-6 text-center select-none md:mx-0 md:max-w-none md:aspect-[5/4]">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-300/80 text-stone-600 mb-3">

@@ -3,7 +3,6 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { ArrowRight, Plus } from "lucide-react";
 import useEmblaCarousel from "embla-carousel-react";
 import type { ProductCategory } from "@/lib/theme-types";
@@ -46,11 +45,7 @@ export function CategoriesSection({
 
   return (
     <section className="mx-auto w-full max-w-[1600px] px-6 py-10 md:px-10 md:py-14">
-      <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-60px" }}
-        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+      <div
         className="mb-6 flex items-end justify-between gap-4 md:mb-8"
       >
         <div>
@@ -68,7 +63,7 @@ export function CategoriesSection({
         >
           See all
         </Link>
-      </motion.div>
+      </div>
 
       {/* Embla Slider Container (No borders) */}
       <div className="overflow-hidden -mx-6 px-6 md:-mx-10 md:px-10" ref={emblaRef}>

@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
 import { Minus, Plus, Play } from "lucide-react";
 import { Product } from "@/lib/theme-types";
 import { formatTaka } from "@/lib/utils";
@@ -150,10 +149,7 @@ export function ProductDetailClient({
 
         {/* Left Column: Image Stage */}
         <div className="space-y-4">
-          <motion.div
-            initial={{ opacity: 0, scale: 1.02 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+          <div
             className="relative bg-stone-100 aspect-[3/4] overflow-hidden border hairline"
           >
             {showVideo && product.video ? (
@@ -184,7 +180,7 @@ export function ProductDetailClient({
                 className="h-full w-full object-cover object-center"
               />
             ) : null}
-          </motion.div>
+          </div>
 
           {/* Multiple Thumbnails Selector — video (if any) sits alongside
            * the images, same size/style, so it reads as just another slide. */}
@@ -236,10 +232,7 @@ export function ProductDetailClient({
         </div>
 
         {/* Right Column: Details & Actions */}
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, delay: 0.15 }}
+        <div
           className="md:sticky md:top-24 md:self-start space-y-8"
         >
           <div>
@@ -400,7 +393,7 @@ export function ProductDetailClient({
             </div>
           </div>
 
-        </motion.div>
+        </div>
       </section>
 
       {/* Product Details Section (Clean, spacious, flat layout with zero lines) */}

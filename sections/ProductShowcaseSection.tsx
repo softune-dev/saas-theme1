@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import type { Product } from "@/lib/theme-types";
 import { formatTaka } from "@/lib/utils";
 import { useCart } from "@/components/cart/CartContext";
@@ -37,11 +36,7 @@ export function ProductShowcaseSection({
     return (
       <section className="w-full bg-transparent">
         <div className="mx-auto w-full max-w-[1600px] px-6 py-10 md:px-10 md:py-14">
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-60px" }}
-            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          <div
             className="grid w-full grid-cols-1 items-center gap-8 lg:grid-cols-2 lg:gap-12 select-none"
           >
             {/* Image skeleton block */}
@@ -72,7 +67,7 @@ export function ProductShowcaseSection({
                 <div className="h-12 flex-1 rounded-[var(--theme-btn-radius)] bg-stone-200" />
               </div>
             </div>
-          </motion.div>
+          </div>
         </div>
       </section>
     );
@@ -91,11 +86,7 @@ export function ProductShowcaseSection({
   return (
     <section className="w-full bg-transparent">
       <div className="mx-auto w-full max-w-[1600px] px-6 py-10 md:px-10 md:py-14">
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-60px" }}
-          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+        <div
           className="grid w-full grid-cols-1 items-center gap-8 lg:grid-cols-2 lg:gap-12"
         >
           {/* Image — top on mobile, left on desktop. No forced aspect
@@ -175,7 +166,7 @@ export function ProductShowcaseSection({
               </Link>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );
